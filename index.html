@@ -754,10 +754,10 @@
             <div class="nav-label">Home</div>
         </div>
         
-        <a href="Games/games.html" class="nav-item" style="text-decoration:none;">
+        <div class="nav-item" onclick="openGames(this)">
             <img src="https://frogiesarcade.win/stuff/icons/calc.svg" alt="Games">
             <div class="nav-label">Games</div>
-        </a>
+        </div>
         
         <div class="nav-item folder-item">
             <img src="https://gcdnb.pbrd.co/images/klrIPWiuxLFX.png?o=1" class="folder-icon" alt="Folder">
@@ -830,6 +830,13 @@
         <div class="main-container">
             <h1 class="neon-title" id="launcher-title">Launcher</h1>
             <button class="curved-btn" style="padding: 20px 50px; font-size: 18px;" id="launcher-btn">Open in about:blank</button>
+        </div>
+    </section>
+
+    <section id="games" class="page-section">
+        <div class="main-container">
+            <h1 class="neon-title">Games</h1>
+            <iframe id="games-iframe" src="" style="width:100%; height: calc(100vh - 170px); border: none; border-radius: 12px; overflow: hidden;"></iframe>
         </div>
     </section>
 
@@ -1478,6 +1485,22 @@
             document.getElementById('launcher-btn').innerText = `Open ${name} in about:blank`;
             document.getElementById('launcher-btn').onclick = () => launchBlank(url);
             showSection('launcher-page');
+        }
+
+        function openGames(element) {
+            // mark nav active and show games section
+            if (element) {
+                document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+                element.classList.add('active');
+            }
+            document.querySelectorAll('.page-section').forEach(s => s.classList.remove('active'));
+            const gamesSection = document.getElementById('games');
+            gamesSection.classList.add('active');
+
+            const iframe = document.getElementById('games-iframe');
+            if (iframe && !iframe.src) {
+                iframe.src = 'Games/games.html';
+            }
         }
 
         function launchBlank(url) {
