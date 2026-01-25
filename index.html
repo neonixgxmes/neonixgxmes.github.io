@@ -810,11 +810,14 @@
 
     <!-- SITE ANNOUNCEMENT -->
     <div id="announcement" role="dialog" aria-modal="true" aria-labelledby="announcement-title">
-        <div class="announcement-content">
+        <div class="announcement-content large">
             <button class="announcement-close" aria-label="Close announcement" onclick="closeAnnouncement()">✕</button>
             <h2 id="announcement-title">V1 IS HERE!!!</h2>
-            <p>Thanks for being part of the journey — claim your OG spot now.</p>
-            <button id="claim-og-btn" class="settings-button claim-btn">claim ur og spot</button>
+            <p style="margin-bottom:10px;">Welcome to V1 — exclusive OG badges available now. Click below to claim your OG badge. This is the only way to unlock the OG badge.</p>
+            <div style="display:flex;gap:10px;align-items:center;justify-content:center;">
+                <button id="claim-og-btn" class="settings-button claim-btn">Claim OG Badge</button>
+                <span id="claim-status" class="small" style="opacity:0.85;color:rgba(255,255,255,0.9)"></span>
+            </div>
         </div>
     </div>
 
@@ -850,6 +853,16 @@
         <div style="margin-top:8px">
             <label class="small">Or avatar URL</label>
             <input type="text" id="avatar-url" placeholder="https://example.com/avatar.png">
+        </div>
+
+        <!-- BADGES SECTION -->
+        <div class="settings-category" style="margin-top:10px;">
+            <h4>Badges</h4>
+            <div class="settings-option" style="display:flex;align-items:center;gap:10px;">
+                <label for="badge-og">OG Badge</label>
+                <input type="checkbox" id="badge-og" style="transform:scale(1.1);">
+                <div id="badge-og-note" class="small">Click the announcement to unlock</div>
+            </div>
         </div>
 
         <div class="panel-actions">
@@ -980,6 +993,44 @@
             </div>
         </div>
     </section>
+
+    <style>
+        /* Profile panel background and placement */
+        #profile-panel {
+            background: linear-gradient(180deg, rgba(10,10,20,0.9), rgba(6,6,12,0.85));
+            border-radius: 12px;
+            padding: 14px;
+            width: 360px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.6);
+            backdrop-filter: blur(6px);
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            z-index: 1200;
+        }
+
+        /* Position settings panel to the left of profile panel so they appear next to each other */
+        #settings-panel {
+            position: fixed;
+            top: 80px;
+            right: 400px;
+            width: 360px;
+            z-index: 1100;
+            border-radius: 12px;
+            padding: 12px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.45);
+            background: rgba(5,6,12,0.75);
+            backdrop-filter: blur(4px);
+        }
+
+        /* Announcement visual tweak */
+        .announcement-content.large { max-width:560px; padding:18px; border-radius:12px; }
+
+        @media (max-width: 900px) {
+            #settings-panel { right: 20px; top: auto; bottom: 20px; width: calc(100% - 40px); }
+            #profile-panel { right: 20px; top: auto; bottom: 420px; width: calc(100% - 40px); }
+        }
+    </style>
 
     <script>
         // ========================
@@ -1911,6 +1962,83 @@
 
         setInterval(updateDateTime, 1000);
         setInterval(initWeather, 600000);
+        // ------------------------
+        // OG Badge / Announcement handlers
+        // ------------------------
+        function applyBadgeToDisplayName() {
+            try {
+                const profile = JSON.parse(localStorage.getItem('neonix-profile')) || {};
+                const inputName = (profile.name || (document.getElementById('username-input') && document.getElementById('username-input').value) || 'Guest');
+                const baseName = inputName.replace(/^\(OG\)\s*/i, '');
+                const hasSelected = !!(profile.badges && profile.badges.ogSelected);
+                const display = hasSelected ? '(OG) ' + baseName : baseName;
+                const panelNameEl = document.getElementById('panel-username');
+                if (panelNameEl) panelNameEl.textContent = display;
+            } catch (e) { console.error('applyBadgeToDisplayName error', e); }
+        }
+
+        (function setupBadgeListeners(){
+            const claimBtn = document.getElementById('claim-og-btn');
+            const claimStatus = document.getElementById('claim-status');
+            const badgeCheckbox = document.getElementById('badge-og');
+
+            function updateBadgeUi() {
+                const profile = JSON.parse(localStorage.getItem('neonix-profile')) || {};
+                const unlocked = !!(profile.badges && profile.badges.ogUnlocked);
+                if (badgeCheckbox) {
+                    badgeCheckbox.disabled = !unlocked;
+                    badgeCheckbox.checked = !!(profile.badges && profile.badges.ogSelected);
+                }
+                if (claimStatus) claimStatus.textContent = unlocked ? 'Unlocked' : '';
+                if (claimBtn) {
+                    if (unlocked) { claimBtn.disabled = true; claimBtn.textContent = 'OG Claimed'; }
+                    else { claimBtn.disabled = false; claimBtn.textContent = 'Claim OG Badge'; }
+                }
+            }
+
+            if (claimBtn) {
+                claimBtn.addEventListener('click', function(){
+                    const profile = JSON.parse(localStorage.getItem('neonix-profile')) || {};
+                    profile.badges = profile.badges || {};
+                    profile.badges.ogUnlocked = true;
+                    profile.badges.ogSelected = true;
+                    localStorage.setItem('neonix-profile', JSON.stringify(profile));
+                    try { if (typeof renderProfileUI === 'function') renderProfileUI(); } catch(e){}
+                    updateBadgeUi();
+                    applyBadgeToDisplayName();
+                    if (typeof closeAnnouncement === 'function') closeAnnouncement();
+                    localStorage.setItem('neonix-announcement-claimed', '1');
+                });
+            }
+
+            if (badgeCheckbox) {
+                badgeCheckbox.addEventListener('change', function(){
+                    const profile = JSON.parse(localStorage.getItem('neonix-profile')) || {};
+                    profile.badges = profile.badges || {};
+                    profile.badges.ogSelected = !!badgeCheckbox.checked;
+                    localStorage.setItem('neonix-profile', JSON.stringify(profile));
+                    applyBadgeToDisplayName();
+                });
+            }
+
+            // Ensure save button persists badge selection and closes panel
+            const saveProfileBtn = document.getElementById('save-profile');
+            if (saveProfileBtn) {
+                saveProfileBtn.addEventListener('click', function(){
+                    const profile = JSON.parse(localStorage.getItem('neonix-profile')) || {};
+                    profile.badges = profile.badges || {};
+                    profile.badges.ogSelected = !!(document.getElementById('badge-og') && document.getElementById('badge-og').checked);
+                    localStorage.setItem('neonix-profile', JSON.stringify(profile));
+                    applyBadgeToDisplayName();
+                    const panel = document.getElementById('profile-panel'); if (panel) panel.style.display = 'none';
+                });
+            }
+
+            // initialize UI on load
+            updateBadgeUi();
+            applyBadgeToDisplayName();
+        })();
+
     </script>
 </body>
 </html>
