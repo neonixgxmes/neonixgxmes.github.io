@@ -1873,13 +1873,34 @@
             const p = window._neonix_profile || {};
             const avatarEls = [document.getElementById('profile-avatar'), document.getElementById('panel-avatar-preview')];
             avatarEls.forEach(el => { if (el) el.src = p.avatar || DEFAULT_AVATAR; });
-            const nameEl = document.getElementById('panel-username'); if (nameEl) nameEl.innerText = p.name || 'Guest';
+            const nameEl = document.getElementById('panel-username');
+            // Display name with OG prefix if selected
+            const hasOg = !!(p.badges && p.badges.ogSelected);
+            const displayName = (hasOg ? '(OG) ' : '') + (p.name || 'Guest');
+            if (nameEl) nameEl.innerText = displayName;
             const usernameInput = document.getElementById('username-input'); if (usernameInput) usernameInput.value = p.name || '';
             // Show/hide sign out depending on signedIn
             const signout = document.getElementById('signout-btn'); if (signout) signout.style.display = p.signedIn ? 'inline-block' : 'none';
             // Hide Google sign-in UI when signed in
             const gsiContainer = document.getElementById('gsi-button'); if (gsiContainer) gsiContainer.style.display = p.signedIn ? 'none' : '';
             const fallbackBtn = document.getElementById('google-signin'); if (fallbackBtn) fallbackBtn.style.display = p.signedIn ? 'none' : '';
+            // Update badge checkbox/note in profile panel
+            try {
+                const badgeCheckbox = document.getElementById('badge-og');
+                const badgeNote = document.getElementById('badge-og-note');
+                const unlocked = !!(p.badges && p.badges.ogUnlocked);
+                const selected = !!(p.badges && p.badges.ogSelected);
+                if (badgeCheckbox) {
+                    badgeCheckbox.disabled = !unlocked;
+                    badgeCheckbox.checked = selected;
+                }
+                if (badgeNote) {
+                    badgeNote.textContent = unlocked ? (selected ? 'OG active' : 'OG available') : 'Click the announcement to unlock';
+                }
+            } catch (e) { console.warn('badge UI update error', e); }
+
+            // Ensure the displayed name is synced across UI
+            try { applyBadgeToDisplayName(); } catch(e){}
         }
 
         function toggleProfilePanel() {
