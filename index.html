@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neonix Nexus</title>
+    <link href="https://fonts.googleapis.com/css?family=Roboto:400,900&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        :root {
+            --primary-blue: #007bff;
+            --neon-glow: #00aaff;
+            --bg-dark: #000814;
+            --glass: rgba(0, 20, 50, 0.6);
+            --transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        /* Holiday Specific Transitions */
+        body { transition: background-color 1s ease; }
+
+        * { box-sizing: border-box; cursor: default; }
+        
+        body, html {
+            margin: 0; padding: 0;
+            height: 100vh; width: 100%;
+            background: var(--bg-dark);
+            font-family: 'Roboto', sans-serif;
+            color: white;
+            overflow: hidden;
+        }
+
+        /* --- ANNOUNCEMENT BUBBLE --- */
+        #holiday-bubble {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: var(--glass);
+            backdrop-filter: blur(10px);
+            border: 2px solid var(--neon-glow);
+            padding: 15px 25px;
+            border-radius: 50px;
+            z-index: 2000;
+            display: none;
+            align-items: center;
+            gap: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            animation: slideUp 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 14px;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(100px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        /* --- LOADING SCREEN --- */
+        #loading-screen {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--bg-dark);
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.8s ease, visibility 0.8s;
+        }
+
+        .loader-logo {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 25px;
+            filter: drop-shadow(0 0 15px var(--neon-glow));
+            animation: pulse 2s infinite ease-in-out;
+        }
+
+        .loader-bar-container {
+            width: 200px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .loader-bar-fill {
+            position: absolute;
+            top: 0; left: 0; height: 100%;
+            width: 0%;
+            background: var(--neon-glow);
+            box-shadow: 0 0 10px var(--neon-glow);
+            transition: width 0.4s ease;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.8; }
+            50% { transform: scale(1.1); opacity: 1; }
+        }
+
+        /* --- NAVIGATION UI --- */
+        .top-nav {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            height: 85px;
+            background: var(--glass);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border-bottom: 2px solid rgba(0, 170, 255, 0.2);
+            z-index: 1000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 40px;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            transition: var(--transition);
+            opacity: 0.6;
+            position: relative;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .nav-item:hover, .nav-item.active {
+            opacity: 1;
+            transform: translateY(-3px);
+        }
+
+        .folder-item { cursor: default; }
+        .folder-item:hover .dropdown-menu { 
+            visibility: visible; 
+            opacity: 1; 
+            transform: translateX(-50%) translateY(0); 
+        }
+
+        .nav-item img {
+            width: 32px;
+            height: 32px;
+            object-fit: contain;
+            filter: drop-shadow(0 0 8px rgba(0, 170, 255, 0.5));
+            margin-bottom: 5px;
+        }
+
+        .folder-icon { filter: drop-shadow(0 0 5px var(--neon-glow)); }
+
+        .nav-label {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 10px;
+            text-transform: uppercase;
+            font-weight: 900;
+            letter-spacing: 1px;
+            text-align: center;
+            white-space: nowrap;
+        }
+
+        .dropdown-menu {
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%) translateY(10px);
+            background: rgba(0, 10, 30, 0.95);
+            border: 1px solid var(--neon-glow);
+            border-radius: 12px;
+            padding: 10px;
+            min-width: 220px;
+            visibility: hidden;
+            opacity: 0;
+            transition: var(--transition);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+            margin-top: 10px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .dropdown-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px;
+            border-radius: 8px;
+            transition: 0.2s;
+            cursor: pointer;
+        }
+
+        .dropdown-item:hover { background: rgba(0, 170, 255, 0.2); }
+        .dropdown-item img { width: 24px !important; height: 24px !important; margin: 0 !important; }
+        .dropdown-item span { font-size: 12px; font-weight: bold; color: white; white-space: nowrap; }
+
+        /* --- SECTIONS --- */
+        .page-section {
+            position: absolute;
+            top: 85px; left: 0;
+            width: 100%;
+            height: calc(100vh - 85px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 2;
+        }
+        .page-section.active { display: flex; }
+
+        canvas#canvas-webgl { position: fixed; top: 0; left: 0; z-index: 0; width: 100%; height: 100%; }
+
+        /* --- CONTENT STYLES --- */
+        .main-container { width: 90%; max-width: 650px; text-align: center; z-index: 5; }
+        h1 { font-size: clamp(26px, 6.5vw, 65px); font-weight: 800; margin-bottom: 25px; }
+        
+        /* --- INFO WIDGET (Date & Weather) --- */
+        .info-widget {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 15px;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-weight: 900;
+            color: var(--neon-glow);
+            opacity: 0.9;
+        }
+        .info-widget div {
+            padding: 5px 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            border: 1px solid rgba(0, 170, 255, 0.1);
+        }
+
+        .search-wrapper { 
+            position: relative; background: var(--glass); border: 2px solid rgba(0, 123, 255, 0.3); 
+            border-radius: 50px; padding: 10px 25px; display: flex; align-items: center; 
+            transition: var(--transition); box-shadow: 0 10px 30px rgba(0,0,0,0.5); overflow: hidden; 
+        }
+        input { flex: 1; background: transparent; border: none; color: white; font-size: 18px; padding: 10px; outline: none; cursor: text; }
+
+        .btn-group { display: flex; gap: 15px; margin-top: 30px; }
+        .curved-btn { 
+            flex: 1; padding: 18px; background: var(--primary-blue); color: white; 
+            border: none; border-radius: 50px; font-weight: bold; text-transform: uppercase; 
+            cursor: pointer; text-decoration: none; transition: var(--transition); font-size: 12px; text-align: center;
+        }
+        .curved-btn:hover { background: #0056b3; box-shadow: 0 8px 25px rgba(0, 123, 255, 0.5); transform: translateY(-3px); }
+
+        .partner-container { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; }
+        .partner-card { 
+            display: flex; flex-direction: column; align-items: center; text-decoration: none; 
+            color: white; transition: var(--transition); background: rgba(0, 20, 50, 0.4);
+            padding: 20px; border-radius: 20px; border: 1px solid rgba(0, 170, 255, 0.2); backdrop-filter: blur(5px);
+            width: 220px;
+        }
+        .partner-card img { width: 100%; border-radius: 10px; margin-bottom: 15px; }
+
+        @keyframes flicker {
+            0%, 18%, 22%, 25%, 53%, 57%, 100% { 
+                text-shadow: 0 0 7px #fff, 0 0 10px #fff, 0 0 21px var(--neon-glow), 0 0 42px var(--primary-blue); 
+            }
+            20%, 24%, 55% { text-shadow: none; }
+        }
+        .neon-title {
+            font-size: clamp(40px, 8vw, 80px);
+            font-weight: 900;
+            animation: flicker 4s infinite alternate;
+            text-transform: uppercase;
+            margin-bottom: 40px;
+        }
+
+        .scan-line { position: absolute; top: 0; left: -100%; width: 50%; height: 100%; background: linear-gradient(90deg, transparent, rgba(0, 170, 255, 0.4), transparent); }
+        .searching .scan-line { animation: scan 1.5s infinite linear; }
+        @keyframes scan { 0% { left: -100%; } 100% { left: 200%; } }
+    </style>
+</head>
+<body>
+
+    <!-- LOADING SCREEN -->
+    <div id="loading-screen">
+        <img src="https://gcdnb.pbrd.co/images/2tAx6LlPWqWu.png?o=1" class="loader-logo" alt="Loading...">
+        <div class="loader-bar-container">
+            <div class="loader-bar-fill" id="loader-bar"></div>
+        </div>
+    </div>
+
+    <!-- HOLIDAY ANNOUNCEMENT BUBBLE -->
+    <div id="holiday-bubble">
+        <span id="holiday-emoji">🎉</span>
+        <span id="holiday-text">Happy Day!</span>
+    </div>
+
+    <nav class="top-nav">
+        <div class="nav-item active" onclick="showSection('notes', this)">
+            <img src="https://gcdnb.pbrd.co/images/2tAx6LlPWqWu.png?o=1" alt="Home">
+            <div class="nav-label">Home</div>
+        </div>
+        
+        <div class="nav-item folder-item">
+            <img src="https://gcdnb.pbrd.co/images/klrIPWiuxLFX.png?o=1" class="folder-icon" alt="Folder">
+            <div class="nav-label">About:Blank <span style="font-size:14px">⌵</span></div>
+            <div class="dropdown-menu">
+                <div class="dropdown-item" onclick="openLauncher('Pizza Edition', 'https://pizzaedition.win//')">
+                    <img src="https://gcdnb.pbrd.co/images/LcQ01msjLL0e.png?o=1" alt="Pizza">
+                    <span>Pizza Edition</span>
+                </div>
+                <div class="dropdown-item" onclick="openLauncher('Velara', 'https://ilovelittlekids.buzz//')">
+                    <img src="https://gcdnb.pbrd.co/images/Q8j4sAZ0DY7A.png?o=1" alt="Velara">
+                    <span>Velara</span>
+                </div>
+                <div class="dropdown-item" onclick="openLauncher('Geometry Learn V4', 'https://dsv.135.148.27.57.nip.io/')">
+                    <img src="https://dsv.135.148.27.57.nip.io/assets/img/essential/icon.ico" alt="Geometry">
+                    <span>Geometry Learn V4</span>
+                </div>
+                <div class="dropdown-item" onclick="openLauncher('Glacier Arcade', 'https://glacierarcade.win//')">
+                    <img src="https://gcdnb.pbrd.co/images/Z2LvYGxXn3GT.png?o=1" alt="Glacier">
+                    <span>Glacier Arcade</span>
+                </div>
+                <div class="dropdown-item" onclick="openLauncher('Hypackel Games', 'https://hypackel.games//')">
+                    <img src="https://gcdnb.pbrd.co/images/93ACdqHChBVP.png?o=1" alt="Hypackel">
+                    <span>Hypackel Games</span>
+                </div>
+                <div class="dropdown-item" onclick="openLauncher('SZ Games', 'https://sz-games.github.io//')">
+                    <img src="https://raw.githubusercontent.com/sz-games/home/refs/heads/main/G.png" alt="SZ">
+                    <span>SZ Games</span>
+                </div>
+                <div class="dropdown-item" onclick="openLauncher('Gn-Math', 'https://www.gn-math.dev/')">
+                    <img src="https://cdn.jsdelivr.net/gh/gn-math/gn-math-DONTDMCA@main/favicon.png" alt="Gn-Math">
+                    <span>Gn-Math</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="nav-item" onclick="showSection('partners', this)">
+            <img src="https://gcdnb.pbrd.co/images/RCqEtQHEYRmy.png?o=1" alt="Partners">
+            <div class="nav-label">Partners</div>
+        </div>
+
+        <a href="https://docs.google.com/forms/d/e/1FAIpQLSdsz5eGGtmTyAoHOvCw3vRMVpgMwjfUOILBifaXF9mI1l22ww/viewform" target="_blank" class="nav-item">
+            <img src="https://gcdnb.pbrd.co/images/j3ngnwYLdI8u.png?o=1" alt="Submission">
+            <div class="nav-label">Gxme Submission</div>
+        </a>
+    </nav>
+
+    <canvas id="canvas-webgl"></canvas>
+
+    <!-- SECTIONS -->
+    <section id="notes" class="page-section active">
+        <div class="main-container">
+            <!-- DATE AND WEATHER WIDGET -->
+            <div class="info-widget">
+                <div id="current-date">Loading...</div>
+                <div id="current-weather">Updating...</div>
+            </div>
+
+            <h1>Neonix's Notes .</h1>
+            <div class="search-wrapper" id="searchBox">
+                <div class="scan-line"></div>
+                <input type="text" id="searchInput" placeholder="Search the notes..." autocomplete="off">
+            </div>
+            <div class="btn-group">
+                <a href="https://sites.google.com/view/stealschools/form" target="_blank" class="curved-btn">Request Notes</a>
+                <a href="https://discord.gg/yJfPuDdK2e" target="_blank" class="curved-btn">Join Discord</a>
+            </div>
+        </div>
+    </section>
+
+    <section id="launcher-page" class="page-section">
+        <div class="main-container">
+            <h1 class="neon-title" id="launcher-title">Launcher</h1>
+            <button class="curved-btn" style="padding: 20px 50px; font-size: 18px;" id="launcher-btn">Open in about:blank</button>
+        </div>
+    </section>
+
+    <section id="partners" class="page-section">
+        <div style="text-align:center;">
+            <h1 style="margin-bottom: 40px;">Partners</h1>
+            <div class="partner-container">
+                <a href="https://sites.google.com/stu.warren.kyschools.us/pumpkinguygames/home?authuser=0" target="_blank" class="partner-card">
+                    <img src="https://pbs.twimg.com/media/GY0nCy5WkAA9VbZ.png" alt="Pumpkin">
+                    <p>Pumpkin Guy Games</p>
+                </a>
+                <a href="https://sites.google.com/ahschools.us/free-math-gamess" target="_blank" class="partner-card">
+                    <img src="https://gcdnb.pbrd.co/images/JRMIvVHodd0y.jpg?o=1" alt="Math">
+                    <p>Unblocked Games</p>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        // --- REAL-TIME WEATHER API INTEGRATION ---
+        async function fetchWeather(lat, lon) {
+            const weatherEl = document.getElementById('current-weather');
+            try {
+                const response = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code&temperature_unit=fahrenheit`);
+                const data = await response.json();
+
+        // --- HOLIDAY ENGINE ---
+        function applyHolidayTheme() {
+            const now = new Date();
+            const month = now.getMonth() + 1;
+            const day = now.getDate();
+            const root = document.documentElement;
+            const bubble = document.getElementById('holiday-bubble');
+            const holidayText = document.getElementById('holiday-text');
+            const holidayEmoji = document.getElementById('holiday-emoji');
+
+            let holiday = null;
+            if (month === 1 && day === 1) holiday = { name: "New Year's", emoji: "🎆", primary: "#ffae00", neon: "#fff700", bg: "#0a0a00" };
+            else if (month === 2 && day === 14) holiday = { name: "Valentine's", emoji: "💖", primary: "#ff4d6d", neon: "#ff85a1", bg: "#1a0005" };
+            else if (month === 3 && day === 17) holiday = { name: "St. Patrick's", emoji: "☘️", primary: "#2b9348", neon: "#55a630", bg: "#001a05" };
+            else if (month === 10 && day === 31) holiday = { name: "Halloween", emoji: "🎃", primary: "#ff6d00", neon: "#ff9e00", bg: "#0f0500" };
+            else if (month === 12 && (day >= 24 && day <= 25)) holiday = { name: "Christmas", emoji: "🎄", primary: "#d90429", neon: "#008000", bg: "#0a140a" };
+
+            if (holiday) {
+                root.style.setProperty('--primary-blue', holiday.primary);
+                root.style.setProperty('--neon-glow', holiday.neon);
+                root.style.setProperty('--bg-dark', holiday.bg);
+                holidayText.innerText = `Happy ${holiday.name}!`;
+                holidayEmoji.innerText = holiday.emoji;
+                setTimeout(() => bubble.style.display = 'flex', 2000);
+            }
+        }
+
+        // --- BACKGROUND ENGINE ---
+        class Plane {
+            constructor() {
+                this.uniforms = { time: { type: 'f', value: 0 } };
+                this.mesh = this.createMesh();
+                this.speed = 1;
+            }
+            createMesh() {
+                return new THREE.Mesh(
+                    new THREE.PlaneGeometry(256, 256, 256, 256),
+                    new THREE.RawShaderMaterial({
+                        uniforms: this.uniforms,
+                        vertexShader: `
+                            precision highp float;
+                            attribute vec3 position;
+                            uniform mat4 projectionMatrix;
+                            uniform mat4 modelViewMatrix;
+                            uniform float time;
+                            varying vec3 vPosition;
+                            mat4 rotateMatrixX(float radian) { return mat4(1.0, 0.0, 0.0, 0.0, 0.0, cos(radian), -sin(radian), 0.0, 0.0, sin(radian), cos(radian), 0.0, 0.0, 0.0, 0.0, 1.0); }
+                            vec3 mod289(vec3 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+                            vec4 mod289(vec4 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+                            vec4 permute(vec4 x) { return mod289(((x*34.0)+1.0)*x); }
+                            vec4 taylorInvSqrt(vec4 r) { return 1.79284291400159 - 0.85373472095314 * r; }
+                            vec3 fade(vec3 t) { return t*t*t*(t*(t*6.0-15.0)+10.0); }
+                            float cnoise(vec3 P) {
+                                vec3 Pi0 = floor(P); vec3 Pi1 = Pi0 + vec3(1.0);
+                                Pi0 = mod289(Pi0); Pi1 = mod289(Pi1);
+                                vec3 Pf0 = fract(P); vec3 Pf1 = Pf0 - vec3(1.0);
+                                vec4 ix = vec4(Pi0.x, Pi1.x, Pi0.x, Pi1.x); vec4 iy = vec4(Pi0.yy, Pi1.yy);
+                                vec4 iz0 = Pi0.zzzz; vec4 iz1 = Pi1.zzzz;
+                                vec4 ixy = permute(permute(ix) + iy);
+                                vec4 ixy0 = permute(ixy + iz0); vec4 ixy1 = permute(ixy + iz1);
+                                vec4 gx0 = ixy0 * (1.0 / 7.0); vec4 gy0 = fract(floor(gx0) * (1.0 / 7.0)) - 0.5;
+                                gx0 = fract(gx0); vec4 gz0 = vec4(0.5) - abs(gx0) - abs(gy0);
+                                vec4 sz0 = step(gz0, vec4(0.0)); gx0 -= sz0 * (step(0.0, gx0) - 0.5); gy0 -= sz0 * (step(0.0, gy0) - 0.5);
+                                vec4 gx1 = ixy1 * (1.0 / 7.0); vec4 gy1 = fract(floor(gx1) * (1.0 / 7.0)) - 0.5;
+                                gx1 = fract(gx1); vec4 gz1 = vec4(0.5) - abs(gx1) - abs(gy1);
+                                vec4 sz1 = step(gz1, vec4(0.0)); gx1 -= sz1 * (step(0.0, gx1) - 0.5); gy1 -= sz1 * (step(0.0, gy1) - 0.5);
+                                vec3 g000 = vec3(gx0.x,gy0.x,gz0.x); vec3 g100 = vec3(gx0.y,gy0.y,gz0.y);
+                                vec3 g010 = vec3(gx0.z,gy0.z,gz0.z); vec3 g110 = vec3(gx0.w,gy0.w,gz0.w);
+                                vec3 g001 = vec3(gx1.x,gy1.x,gz1.x); vec3 g101 = vec3(gx1.y,gy1.y,gz1.y);
+                                vec3 g011 = vec3(gx1.z,gy1.z,gz1.z); vec3 g111 = vec3(gx1.w,gy1.w,gz1.w);
+                                vec4 norm0 = taylorInvSqrt(vec4(dot(g000, g000), dot(g010, g010), dot(g100, g100), dot(g110, g110)));
+                                g000 *= norm0.x; g010 *= norm0.y; g100 *= norm0.z; g110 *= norm0.w;
+                                vec4 norm1 = taylorInvSqrt(vec4(dot(g001, g001), dot(g011, g011), dot(g101, g101), dot(g111, g111)));
+                                g001 *= norm1.x; g011 *= norm1.y; g101 *= norm1.z; g111 *= norm1.w;
+                                float n000 = dot(g000, Pf0); float n100 = dot(g100, vec3(Pf1.x, Pf0.yz));
+                                float n010 = dot(g010, vec3(Pf0.x, Pf1.y, Pf0.z)); float n110 = dot(g110, vec3(Pf1.xy, Pf0.z));
+                                float n001 = dot(g001, vec3(Pf0.xy, Pf1.z)); float n101 = dot(g101, vec3(Pf1.x, Pf0.y, Pf1.z));
+                                float n011 = dot(g011, vec3(Pf0.x, Pf1.yz)); float n111 = dot(g111, Pf1);
+                                vec3 fade_xyz = fade(Pf0);
+                                vec4 n_z = mix(vec4(n000, n100, n010, n110), vec4(n001, n101, n011, n111), fade_xyz.z);
+                                vec2 n_yz = mix(n_z.xy, n_z.zw, fade_xyz.y);
+                                return 2.2 * mix(n_yz.x, n_yz.y, fade_xyz.x);
+                            }
+                            void main(void) {
+                                vec3 updatePosition = (rotateMatrixX(radians(90.0)) * vec4(position, 1.0)).xyz;
+                                float sin1 = sin(radians(updatePosition.x / 128.0 * 90.0));
+                                vec3 noisePosition = updatePosition + vec3(0.0, 0.0, time * -30.0);
+                                float noise1 = cnoise(noisePosition * 0.08);
+                                float noise2 = cnoise(noisePosition * 0.06);
+                                float noise3 = cnoise(noisePosition * 0.4);
+                                vec3 lastPosition = updatePosition + vec3(0.0, noise1 * sin1 * 8.0 + noise2 * sin1 * 8.0 + noise3 * (abs(sin1) * 2.0 + 0.5) + pow(sin1, 2.0) * 40.0, 0.0);
+                                vPosition = lastPosition;
+                                gl_Position = projectionMatrix * modelViewMatrix * vec4(lastPosition, 1.0);
+                            }
+                        `,
+                        fragmentShader: `
+                            precision highp float;
+                            varying vec3 vPosition;
+                            void main(void) {
+                                float opacity = (96.0 - length(vPosition)) / 256.0 * 0.6;
+                                vec3 color = vec3(0.0, 0.48, 1.0); 
+                                gl_FragColor = vec4(color, opacity);
+                            }
+                        `,
+                        transparent: true
+                    })
+                );
+            }
+            render(delta) { this.uniforms.time.value += delta * this.speed; }
+        }
+
+        const hillCanvas = document.getElementById('canvas-webgl');
+        const renderer = new THREE.WebGLRenderer({ antialias: true, canvas: hillCanvas, alpha: true });
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 10000);
+        const clock = new THREE.Clock();
+        const plane = new Plane();
+
+        function initHills() {
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setClearColor(0x000814, 1.0);
+            camera.position.set(0, 16, 128);
+            camera.lookAt(new THREE.Vector3(0, 28, 0));
+            scene.add(plane.mesh);
+        }
+
+        function animateHills() {
+            plane.render(clock.getDelta());
+            renderer.render(scene, camera);
+            requestAnimationFrame(animateHills);
+        }
+
+        // --- GLOBAL INIT ---
+        window.addEventListener('load', () => {
+            const bar = document.getElementById('loader-bar');
+            const screen = document.getElementById('loading-screen');
+            initHills();
+            animateHills();
+            applyHolidayTheme();
+            updateDateTime();
+            initWeather();
+
+            let width = 0;
+            const interval = setInterval(() => {
+                width += Math.random() * 25;
+                if (width >= 100) {
+                    width = 100;
+                    clearInterval(interval);
+                    setTimeout(() => {
+                        screen.style.opacity = '0';
+                        screen.style.visibility = 'hidden';
+                    }, 600);
+                }
+                bar.style.width = width + '%';
+            }, 180);
+        });
+
+        function showSection(id, element) {
+            if (element && !element.classList.contains('folder-item')) {
+                document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+                element.classList.add('active');
+            }
+            document.querySelectorAll('.page-section').forEach(s => s.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+        }
+
+        function openLauncher(name, url) {
+            document.getElementById('launcher-title').innerText = name;
+            document.getElementById('launcher-btn').innerText = `Open ${name} in about:blank`;
+            document.getElementById('launcher-btn').onclick = () => launchBlank(url);
+            showSection('launcher-page');
+        }
+
+        function launchBlank(url) {
+            var win = window.open('about:blank');
+            if (win) {
+                win.document.body.style.margin = '0';
+                win.document.body.style.height = '100vh';
+                win.document.body.style.overflow = 'hidden';
+                var iframe = win.document.createElement('iframe');
+                iframe.style.border = 'none';
+                iframe.style.width = '100%';
+                iframe.style.height = '100%';
+                iframe.src = url;
+                win.document.body.appendChild(iframe);
+            }
+        }
+
+        const input = document.getElementById('searchInput');
+        input.onkeypress = (e) => {
+            if(e.key === 'Enter' && input.value.trim()) {
+                document.getElementById('searchBox').classList.add('searching');
+                setTimeout(() => {
+                    window.open(`https://sites.google.com/search/stealschools?query=${encodeURIComponent(input.value)}`);
+                    document.getElementById('searchBox').classList.remove('searching');
+                }, 800);
+            }
+        };
+
+        window.onresize = () => {
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+        };
+    </script>
+</body>
+</html>
