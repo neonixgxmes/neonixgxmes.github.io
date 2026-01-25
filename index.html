@@ -29,6 +29,255 @@
             overflow: hidden;
         }
 
+        /* --- SETTINGS BUTTON --- */
+        #settings-button {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            background: var(--glass);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(0, 170, 255, 0.3);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 2000;
+            transition: var(--transition);
+        }
+
+        #settings-button:hover {
+            transform: rotate(30deg) scale(1.1);
+            border-color: var(--neon-glow);
+            box-shadow: 0 0 20px rgba(0, 170, 255, 0.5);
+        }
+
+        #settings-button img {
+            width: 24px;
+            height: 24px;
+            filter: drop-shadow(0 0 5px rgba(0, 170, 255, 0.5));
+            transition: var(--transition);
+        }
+
+        #settings-button:hover img {
+            filter: drop-shadow(0 0 10px var(--neon-glow));
+        }
+
+        /* --- SETTINGS PANEL --- */
+        #settings-panel {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            width: 320px;
+            max-height: 80vh;
+            background: rgba(0, 10, 30, 0.95);
+            backdrop-filter: blur(20px);
+            border: 2px solid var(--neon-glow);
+            border-radius: 15px;
+            padding: 20px;
+            z-index: 1999;
+            display: none;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.8);
+            animation: slideDown 0.3s ease-out;
+            overflow-y: auto;
+        }
+
+        @keyframes slideDown {
+            from { transform: translateY(-20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .settings-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(0, 170, 255, 0.3);
+        }
+
+        .settings-header h3 {
+            margin: 0;
+            font-size: 16px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--neon-glow);
+        }
+
+        .settings-category {
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .settings-category:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+
+        .settings-category h4 {
+            margin: 0 0 10px 0;
+            font-size: 14px;
+            color: var(--neon-glow);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .settings-option {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+        }
+
+        .settings-option label {
+            font-size: 13px;
+            font-weight: bold;
+            color: white;
+            flex: 1;
+        }
+
+        .settings-option select,
+        .settings-option input[type="text"] {
+            background: rgba(0, 20, 50, 0.6);
+            border: 1px solid var(--neon-glow);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 13px;
+            outline: none;
+            cursor: pointer;
+            width: 150px;
+            margin-left: 10px;
+        }
+
+        .settings-option input[type="text"] {
+            cursor: text;
+            padding: 6px 10px;
+        }
+
+        .settings-option input[type="range"] {
+            width: 150px;
+            margin-left: 10px;
+            -webkit-appearance: none;
+            height: 5px;
+            background: rgba(0, 20, 50, 0.6);
+            border-radius: 5px;
+            outline: none;
+        }
+
+        .settings-option input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 15px;
+            height: 15px;
+            background: var(--neon-glow);
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .settings-option select option {
+            background: #000814;
+        }
+
+        .settings-button {
+            background: var(--primary-blue);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            font-size: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: var(--transition);
+            margin-top: 5px;
+            width: 100%;
+        }
+
+        .settings-button:hover {
+            background: #0056b3;
+            box-shadow: 0 0 10px rgba(0, 170, 255, 0.5);
+        }
+
+        .settings-button.secondary {
+            background: rgba(0, 170, 255, 0.2);
+            margin-top: 10px;
+        }
+
+        .settings-button.secondary:hover {
+            background: rgba(0, 170, 255, 0.4);
+        }
+
+        .color-preview {
+            width: 30px;
+            height: 30px;
+            border-radius: 5px;
+            border: 2px solid var(--neon-glow);
+            cursor: pointer;
+            margin-left: 10px;
+        }
+
+        .settings-info {
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.6);
+            margin-top: 5px;
+            font-style: italic;
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 50px;
+            height: 24px;
+            margin-left: 10px;
+        }
+
+        .toggle-switch input {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            margin: 0;
+            padding: 0;
+            cursor: pointer;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            display: block;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 20, 50, 0.6);
+            border: 1px solid var(--neon-glow);
+            border-radius: 34px;
+            transition: .4s;
+            pointer-events: none;
+        }
+
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            border-radius: 50%;
+            transition: .4s;
+        }
+
+        input:checked + .toggle-slider {
+            background-color: var(--neon-glow);
+        }
+
+        input:checked + .toggle-slider:before {
+            transform: translateX(26px);
+        }
+
         /* --- ANNOUNCEMENT BUBBLE --- */
         #holiday-bubble {
             position: fixed;
@@ -208,7 +457,41 @@
         }
         .page-section.active { display: flex; }
 
-        canvas#canvas-webgl { position: fixed; top: 0; left: 0; z-index: 0; width: 100%; height: 100%; }
+        canvas#canvas-webgl { 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            z-index: 0; 
+            width: 100%; 
+            height: 100%;
+            opacity: 1;
+            transition: opacity 1s ease;
+        }
+
+        canvas#particles-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 0;
+            width: 100%;
+            height: 100%;
+            display: none;
+            opacity: 0;
+            transition: opacity 1s ease;
+        }
+
+        #static-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #000814 0%, #001428 50%, #000a14 100%);
+            display: none;
+            opacity: 0;
+            transition: opacity 1s ease;
+        }
 
         /* --- CONTENT STYLES --- */
         .main-container { width: 90%; max-width: 650px; text-align: center; z-index: 5; }
@@ -275,9 +558,181 @@
         .scan-line { position: absolute; top: 0; left: -100%; width: 50%; height: 100%; background: linear-gradient(90deg, transparent, rgba(0, 170, 255, 0.4), transparent); }
         .searching .scan-line { animation: scan 1.5s infinite linear; }
         @keyframes scan { 0% { left: -100%; } 100% { left: 200%; } }
+
+        /* --- TAB CLOAKER PREVIEW --- */
+        #cloak-preview {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            border: 2px solid var(--neon-glow);
+            border-radius: 10px;
+            padding: 10px;
+            z-index: 1001;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            backdrop-filter: blur(10px);
+            transition: var(--transition);
+        }
+
+        #cloak-preview img {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+        }
+
+        #cloak-preview span {
+            font-size: 12px;
+            font-weight: bold;
+            color: white;
+        }
+
+        #cloak-preview:hover {
+            background: rgba(0, 0, 0, 0.9);
+            transform: scale(1.05);
+        }
     </style>
 </head>
 <body>
+
+    <!-- TAB CLOAKER PREVIEW -->
+    <div id="cloak-preview" style="display: none;">
+        <img id="cloak-icon" src="" alt="Cloaked Tab Icon">
+        <span id="cloak-title">Loading...</span>
+    </div>
+
+    <!-- SETTINGS BUTTON -->
+    <div id="settings-button">
+        <img src="https://cdn.jsdelivr.net/gh/gn-math/gn-math-DONTDMCA@main/setting.png" alt="Settings">
+    </div>
+
+    <!-- SETTINGS PANEL -->
+    <div id="settings-panel">
+        <div class="settings-header">
+            <img src="https://cdn.jsdelivr.net/gh/gn-math/gn-math-DONTDMCA@main/setting.png" alt="Settings" width="20" height="20">
+            <h3>Settings</h3>
+        </div>
+        
+        <!-- THEME SECTION -->
+        <div class="settings-category">
+            <h4>Theme & Appearance</h4>
+            <div class="settings-option">
+                <label for="theme-select">Theme</label>
+                <select id="theme-select">
+                    <option value="default">Default Theme</option>
+                    <option value="dark">Dark Mode</option>
+                    <option value="light">Light Mode</option>
+                    <option value="ocean">Ocean Blue</option>
+                    <option value="neon">Neon Purple</option>
+                    <option value="custom">Custom Colors</option>
+                </select>
+            </div>
+            <div class="settings-option" id="custom-colors" style="display: none;">
+                <label>Primary Color</label>
+                <input type="color" id="primary-color-picker" value="#007bff" style="width: 40px; height: 30px;">
+            </div>
+        </div>
+
+        <!-- ANIMATIONS SECTION -->
+        <div class="settings-category">
+            <h4>Animations</h4>
+            <div class="settings-option">
+                <label for="animations-select">Animation Level</label>
+                <select id="animations-select">
+                    <option value="full">Full Animations</option>
+                    <option value="reduced">Reduced Motion</option>
+                    <option value="none">No Animations</option>
+                </select>
+            </div>
+            <div class="settings-option">
+                <label for="bg-animation-speed">BG Animation Speed</label>
+                <input type="range" id="bg-animation-speed" min="0.1" max="3" step="0.1" value="1">
+            </div>
+            <div class="settings-option">
+                <label for="enable-holiday">Holiday Themes</label>
+                <div class="toggle-switch">
+                    <input type="checkbox" id="enable-holiday" checked>
+                    <span class="toggle-slider"></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- BACKGROUND SECTION -->
+        <div class="settings-category">
+            <h4>Background</h4>
+            <div class="settings-option">
+                <label for="background-select">Background Type</label>
+                <select id="background-select">
+                    <option value="waves">Animated Waves</option>
+                    <option value="particles">Particle System</option>
+                    <option value="static">Static Gradient</option>
+                    <option value="custom">Custom Image</option>
+                    <option value="none">No Background</option>
+                </select>
+            </div>
+            <div class="settings-option" id="custom-bg-url" style="display: none;">
+                <label for="bg-image-url">Image URL</label>
+                <input type="text" id="bg-image-url" placeholder="https://example.com/image.jpg">
+            </div>
+            <div class="settings-option" id="bg-opacity-control">
+                <label for="bg-opacity">Background Opacity</label>
+                <input type="range" id="bg-opacity" min="0.1" max="1" step="0.1" value="1">
+            </div>
+            <button class="settings-button secondary" id="apply-bg">Apply Background Changes</button>
+        </div>
+
+        <!-- TAB CLOAKER SECTION -->
+        <div class="settings-category">
+            <h4>Tab Cloaker</h4>
+            <div class="settings-option">
+                <label for="cloak-title-input">Tab Title</label>
+                <input type="text" id="cloak-title-input" placeholder="Google Classroom">
+            </div>
+            <div class="settings-option">
+                <label for="cloak-icon-url">Icon URL</label>
+                <input type="text" id="cloak-icon-url" placeholder="https://example.com/icon.png">
+            </div>
+            <div class="settings-option">
+                <label>Enable Cloaking</label>
+                <div class="toggle-switch">
+                    <input type="checkbox" id="enable-cloak">
+                    <span class="toggle-slider"></span>
+                </div>
+            </div>
+            <button class="settings-button" id="apply-cloak">Apply Tab Cloak</button>
+            <button class="settings-button secondary" id="reset-cloak">Reset to Default</button>
+        </div>
+
+        <!-- WEATHER SECTION -->
+        <div class="settings-category">
+            <h4>Weather</h4>
+            <div class="settings-option">
+                <label for="weather-unit">Temperature Unit</label>
+                <select id="weather-unit">
+                    <option value="fahrenheit">°F Fahrenheit</option>
+                    <option value="celsius">°C Celsius</option>
+                </select>
+            </div>
+            <div class="settings-option">
+                <label for="weather-location">Custom Location</label>
+                <input type="text" id="weather-location" placeholder="Berlin, Germany">
+            </div>
+        </div>
+
+        <!-- RESET SECTION -->
+        <div class="settings-category">
+            <h4>Reset & Save</h4>
+            <button class="settings-button" id="save-settings">Save All Settings</button>
+            <button class="settings-button secondary" id="reset-settings">Reset to Default</button>
+            <p class="settings-info">Settings are automatically saved to your browser's local storage.</p>
+        </div>
+    </div>
+
+    <!-- BACKGROUND CANVASES -->
+    <canvas id="canvas-webgl"></canvas>
+    <canvas id="particles-canvas"></canvas>
+    <div id="static-bg"></div>
 
     <!-- LOADING SCREEN -->
     <div id="loading-screen">
@@ -345,8 +800,6 @@
         </a>
     </nav>
 
-    <canvas id="canvas-webgl"></canvas>
-
     <!-- SECTIONS -->
     <section id="notes" class="page-section active">
         <div class="main-container">
@@ -392,11 +845,268 @@
     </section>
 
     <script>
-        // --- REAL-TIME WEATHER API INTEGRATION ---
+        // ========================
+        // SETTINGS SYSTEM
+        // ========================
+        let settingsVisible = false;
+        let currentBackground = 'waves';
+        let particleSystemActive = false;
+        let particles = [];
+        let particlesCanvas, particlesCtx;
+
+        // Initialize settings from localStorage
+        const defaultSettings = {
+            theme: 'default',
+            animations: 'full',
+            background: 'waves',
+            weatherUnit: 'fahrenheit',
+            holidayThemes: true,
+            bgAnimationSpeed: 1,
+            bgOpacity: 1,
+            cloakEnabled: false,
+            cloakTitle: 'Neonix\'s Notes',
+            cloakIcon: 'https://gcdnb.pbrd.co/images/2tAx6LlPWqWu.png?o=1'
+        };
+
+        let settings = JSON.parse(localStorage.getItem('neonix-settings')) || defaultSettings;
+
+        // ========================
+        // SETTINGS UI CONTROL
+        // ========================
+        const settingsButton = document.getElementById('settings-button');
+        const settingsPanel = document.getElementById('settings-panel');
+
+        settingsButton.addEventListener('click', (e) => {
+            e.stopPropagation();
+            settingsVisible = !settingsVisible;
+            settingsPanel.style.display = settingsVisible ? 'block' : 'none';
+        });
+
+        document.addEventListener('click', () => {
+            if (settingsVisible) {
+                settingsVisible = false;
+                settingsPanel.style.display = 'none';
+            }
+        });
+
+        settingsPanel.addEventListener('click', (e) => {
+            e.stopPropagation();
+        });
+
+        // ========================
+        // THEME SYSTEM
+        // ========================
+        function applyTheme(theme) {
+            const root = document.documentElement;
+            
+            switch(theme) {
+                case 'dark':
+                    root.style.setProperty('--primary-blue', '#0056b3');
+                    root.style.setProperty('--neon-glow', '#0077cc');
+                    root.style.setProperty('--bg-dark', '#000000');
+                    root.style.setProperty('--glass', 'rgba(0, 0, 0, 0.8)');
+                    break;
+                case 'light':
+                    root.style.setProperty('--primary-blue', '#007bff');
+                    root.style.setProperty('--neon-glow', '#00aaff');
+                    root.style.setProperty('--bg-dark', '#f0f0f0');
+                    root.style.setProperty('--glass', 'rgba(240, 240, 240, 0.8)');
+                    break;
+                case 'ocean':
+                    root.style.setProperty('--primary-blue', '#1e90ff');
+                    root.style.setProperty('--neon-glow', '#00ced1');
+                    root.style.setProperty('--bg-dark', '#001f3f');
+                    root.style.setProperty('--glass', 'rgba(0, 31, 63, 0.8)');
+                    break;
+                case 'neon':
+                    root.style.setProperty('--primary-blue', '#9d00ff');
+                    root.style.setProperty('--neon-glow', '#ff00ff');
+                    root.style.setProperty('--bg-dark', '#0a0014');
+                    root.style.setProperty('--glass', 'rgba(10, 0, 20, 0.8)');
+                    break;
+                case 'custom':
+                    // Custom colors handled by color picker
+                    break;
+                default:
+                    root.style.setProperty('--primary-blue', '#007bff');
+                    root.style.setProperty('--neon-glow', '#00aaff');
+                    root.style.setProperty('--bg-dark', '#000814');
+                    root.style.setProperty('--glass', 'rgba(0, 20, 50, 0.6)');
+            }
+        }
+
+        // ========================
+        // ANIMATION SYSTEM
+        // ========================
+        function applyAnimations(level) {
+            const allElements = document.querySelectorAll('*');
+            
+            if (level === 'none') {
+                allElements.forEach(el => {
+                    el.style.animationPlayState = 'paused';
+                    el.style.transition = 'none';
+                });
+                plane.speed = 0;
+            } else if (level === 'reduced') {
+                allElements.forEach(el => {
+                    if (el.style.animationDuration) {
+                        el.style.animationDuration = '0.5s';
+                    }
+                    if (el.style.transitionDuration) {
+                        el.style.transitionDuration = '0.3s';
+                    }
+                });
+                plane.speed = 0.5;
+            } else {
+                allElements.forEach(el => {
+                    el.style.animationPlayState = 'running';
+                    el.style.transition = '';
+                });
+                plane.speed = settings.bgAnimationSpeed || 1;
+            }
+        }
+
+        // ========================
+        // BACKGROUND SYSTEM
+        // ========================
+        function initParticles() {
+            particlesCanvas = document.getElementById('particles-canvas');
+            particlesCtx = particlesCanvas.getContext('2d');
+            particlesCanvas.width = window.innerWidth;
+            particlesCanvas.height = window.innerHeight;
+            particles = [];
+            
+            // Create particles
+            for (let i = 0; i < 100; i++) {
+                particles.push({
+                    x: Math.random() * particlesCanvas.width,
+                    y: Math.random() * particlesCanvas.height,
+                    size: Math.random() * 3 + 1,
+                    speedX: Math.random() * 2 - 1,
+                    speedY: Math.random() * 2 - 1,
+                    color: `rgba(0, 170, 255, ${Math.random() * 0.5 + 0.2})`
+                });
+            }
+        }
+
+        function animateParticles() {
+            if (!particleSystemActive) return;
+            
+            particlesCtx.clearRect(0, 0, particlesCanvas.width, particlesCanvas.height);
+            
+            for (let particle of particles) {
+                particle.x += particle.speedX;
+                particle.y += particle.speedY;
+                
+                // Bounce off edges
+                if (particle.x < 0 || particle.x > particlesCanvas.width) particle.speedX *= -1;
+                if (particle.y < 0 || particle.y > particlesCanvas.height) particle.speedY *= -1;
+                
+                // Draw particle
+                particlesCtx.beginPath();
+                particlesCtx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
+                particlesCtx.fillStyle = particle.color;
+                particlesCtx.fill();
+            }
+            
+            requestAnimationFrame(animateParticles);
+        }
+
+        function switchBackground(type) {
+            const webglCanvas = document.getElementById('canvas-webgl');
+            const particlesCanvas = document.getElementById('particles-canvas');
+            const staticBg = document.getElementById('static-bg');
+            const customBgUrl = document.getElementById('bg-image-url').value;
+            
+            // Hide all backgrounds first
+            webglCanvas.style.opacity = '0';
+            particlesCanvas.style.opacity = '0';
+            staticBg.style.opacity = '0';
+            
+            setTimeout(() => {
+                webglCanvas.style.display = 'none';
+                particlesCanvas.style.display = 'none';
+                staticBg.style.display = 'none';
+                
+                switch(type) {
+                    case 'waves':
+                        webglCanvas.style.display = 'block';
+                        setTimeout(() => webglCanvas.style.opacity = settings.bgOpacity || '1', 50);
+                        particleSystemActive = false;
+                        break;
+                    case 'particles':
+                        particlesCanvas.style.display = 'block';
+                        setTimeout(() => particlesCanvas.style.opacity = settings.bgOpacity || '1', 50);
+                        particleSystemActive = true;
+                        initParticles();
+                        animateParticles();
+                        break;
+                    case 'static':
+                        staticBg.style.display = 'block';
+                        setTimeout(() => staticBg.style.opacity = settings.bgOpacity || '1', 50);
+                        particleSystemActive = false;
+                        break;
+                    case 'custom':
+                        if (customBgUrl) {
+                            document.body.style.backgroundImage = `url('${customBgUrl}')`;
+                            document.body.style.backgroundSize = 'cover';
+                            document.body.style.backgroundPosition = 'center';
+                            document.body.style.backgroundRepeat = 'no-repeat';
+                        }
+                        particleSystemActive = false;
+                        break;
+                    case 'none':
+                        document.body.style.backgroundImage = 'none';
+                        particleSystemActive = false;
+                        break;
+                }
+            }, 300);
+        }
+
+        // ========================
+        // TAB CLOAKER SYSTEM
+        // ========================
+        function applyTabCloak(title, iconUrl) {
+            const preview = document.getElementById('cloak-preview');
+            const previewIcon = document.getElementById('cloak-icon');
+            const previewTitle = document.getElementById('cloak-title');
+            
+            if (settings.cloakEnabled && title && iconUrl) {
+                // Change tab title
+                document.title = title;
+                
+                // Update preview
+                previewIcon.src = iconUrl;
+                previewTitle.textContent = title;
+                preview.style.display = 'flex';
+                
+                // Update favicon
+                const link = document.querySelector("link[rel*='icon']") || document.createElement('link');
+                link.type = 'image/x-icon';
+                link.rel = 'shortcut icon';
+                link.href = iconUrl;
+                document.head.appendChild(link);
+            } else {
+                // Reset to default
+                document.title = "Neonix's Notes";
+                preview.style.display = 'none';
+                
+                const defaultIcon = document.querySelector("link[rel*='icon']");
+                if (defaultIcon) {
+                    defaultIcon.href = "https://gcdnb.pbrd.co/images/2tAx6LlPWqWu.png?o=1";
+                }
+            }
+        }
+
+        // ========================
+        // WEATHER SYSTEM
+        // ========================
         async function fetchWeather(lat, lon) {
             const weatherEl = document.getElementById('current-weather');
+            const unit = settings.weatherUnit === 'celsius' ? 'celsius' : 'fahrenheit';
+            
             try {
-                const response = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code&temperature_unit=fahrenheit`);
+                const response = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code&temperature_unit=${unit}`);
                 const data = await response.json();
                 
                 if (data && data.current) {
@@ -405,7 +1115,6 @@
                     let emoji = "☀️";
                     let status = "Clear";
 
-                    // Simple Weather Code Mapping
                     if (code >= 1 && code <= 3) { emoji = "⛅"; status = "Partly Cloudy"; }
                     else if (code >= 45 && code <= 48) { emoji = "🌫️"; status = "Foggy"; }
                     else if (code >= 51 && code <= 67) { emoji = "🌧️"; status = "Rainy"; }
@@ -413,7 +1122,8 @@
                     else if (code >= 80 && code <= 82) { emoji = "🌦️"; status = "Showers"; }
                     else if (code >= 95) { emoji = "⛈️"; status = "Stormy"; }
 
-                    weatherEl.innerText = `${emoji} ${status} ${temp}°F`;
+                    const unitSymbol = unit === 'celsius' ? '°C' : '°F';
+                    weatherEl.innerText = `${emoji} ${status} ${temp}${unitSymbol}`;
                 }
             } catch (err) {
                 weatherEl.innerText = "Weather N/A";
@@ -421,29 +1131,22 @@
         }
 
         function initWeather() {
-            // Default: Berlin (as in your example) or user location
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(
                     (pos) => fetchWeather(pos.coords.latitude, pos.coords.longitude),
-                    () => fetchWeather(52.52, 13.41) // Fallback to default
+                    () => fetchWeather(52.52, 13.41)
                 );
             } else {
                 fetchWeather(52.52, 13.41);
             }
         }
 
-        function updateDateTime() {
-            const dateEl = document.getElementById('current-date');
-            const now = new Date();
-            const options = { weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' };
-            dateEl.innerText = now.toLocaleString('en-US', options);
-        }
-
-        setInterval(updateDateTime, 1000);
-        setInterval(initWeather, 600000); // Update weather every 10 mins
-
-        // --- HOLIDAY ENGINE ---
+        // ========================
+        // HOLIDAY THEME SYSTEM
+        // ========================
         function applyHolidayTheme() {
+            if (!settings.holidayThemes) return;
+            
             const now = new Date();
             const month = now.getMonth() + 1;
             const day = now.getDate();
@@ -469,12 +1172,141 @@
             }
         }
 
-        // --- BACKGROUND ENGINE ---
+        // ========================
+        // SAVE/LOAD SETTINGS
+        // ========================
+        function saveSettings() {
+            settings.theme = document.getElementById('theme-select').value;
+            settings.animations = document.getElementById('animations-select').value;
+            settings.background = document.getElementById('background-select').value;
+            settings.weatherUnit = document.getElementById('weather-unit').value;
+            settings.holidayThemes = document.getElementById('enable-holiday').checked;
+            settings.bgAnimationSpeed = parseFloat(document.getElementById('bg-animation-speed').value);
+            settings.bgOpacity = parseFloat(document.getElementById('bg-opacity').value);
+            settings.cloakEnabled = document.getElementById('enable-cloak').checked;
+            settings.cloakTitle = document.getElementById('cloak-title-input').value;
+            settings.cloakIcon = document.getElementById('cloak-icon-url').value;
+            
+            localStorage.setItem('neonix-settings', JSON.stringify(settings));
+            applyAllSettings();
+        }
+
+        function loadSettings() {
+            // Theme
+            document.getElementById('theme-select').value = settings.theme;
+            applyTheme(settings.theme);
+            
+            // Animations
+            document.getElementById('animations-select').value = settings.animations;
+            document.getElementById('bg-animation-speed').value = settings.bgAnimationSpeed;
+            document.getElementById('enable-holiday').checked = settings.holidayThemes;
+            applyAnimations(settings.animations);
+            
+            // Background
+            document.getElementById('background-select').value = settings.background;
+            document.getElementById('bg-opacity').value = settings.bgOpacity;
+            switchBackground(settings.background);
+            
+            // Weather
+            document.getElementById('weather-unit').value = settings.weatherUnit;
+            
+            // Tab Cloaker
+            document.getElementById('enable-cloak').checked = settings.cloakEnabled;
+            document.getElementById('cloak-title-input').value = settings.cloakTitle;
+            document.getElementById('cloak-icon-url').value = settings.cloakIcon;
+            
+            if (settings.cloakEnabled) {
+                applyTabCloak(settings.cloakTitle, settings.cloakIcon);
+            }
+        }
+
+        function applyAllSettings() {
+            applyTheme(settings.theme);
+            applyAnimations(settings.animations);
+            switchBackground(settings.background);
+            applyTabCloak(settings.cloakTitle, settings.cloakIcon);
+            plane.speed = settings.bgAnimationSpeed;
+            
+            if (settings.holidayThemes) {
+                applyHolidayTheme();
+            }
+        }
+
+        function resetSettings() {
+            settings = { ...defaultSettings };
+            localStorage.setItem('neonix-settings', JSON.stringify(settings));
+            loadSettings();
+        }
+
+        // ========================
+        // EVENT LISTENERS
+        // ========================
+        document.getElementById('theme-select').addEventListener('change', function() {
+            settings.theme = this.value;
+            applyTheme(this.value);
+        });
+
+        document.getElementById('animations-select').addEventListener('change', function() {
+            settings.animations = this.value;
+            applyAnimations(this.value);
+        });
+
+        document.getElementById('bg-animation-speed').addEventListener('input', function() {
+            settings.bgAnimationSpeed = parseFloat(this.value);
+            plane.speed = settings.bgAnimationSpeed;
+        });
+
+        document.getElementById('background-select').addEventListener('change', function() {
+            const customBg = document.getElementById('custom-bg-url');
+            customBg.style.display = this.value === 'custom' ? 'flex' : 'none';
+            settings.background = this.value;
+        });
+
+        document.getElementById('bg-opacity').addEventListener('input', function() {
+            settings.bgOpacity = parseFloat(this.value);
+            const activeBg = document.querySelector('canvas[style*="display: block"], #static-bg[style*="display: block"]');
+            if (activeBg) {
+                activeBg.style.opacity = settings.bgOpacity;
+            }
+        });
+
+        document.getElementById('apply-bg').addEventListener('click', () => {
+            settings.background = document.getElementById('background-select').value;
+            settings.bgOpacity = parseFloat(document.getElementById('bg-opacity').value);
+            switchBackground(settings.background);
+        });
+
+        document.getElementById('apply-cloak').addEventListener('click', () => {
+            settings.cloakEnabled = document.getElementById('enable-cloak').checked;
+            settings.cloakTitle = document.getElementById('cloak-title-input').value || "Neonix's Notes";
+            settings.cloakIcon = document.getElementById('cloak-icon-url').value || "https://gcdnb.pbrd.co/images/2tAx6LlPWqWu.png?o=1";
+            applyTabCloak(settings.cloakTitle, settings.cloakIcon);
+        });
+
+        document.getElementById('reset-cloak').addEventListener('click', () => {
+            document.getElementById('enable-cloak').checked = false;
+            document.getElementById('cloak-title-input').value = "Neonix's Notes";
+            document.getElementById('cloak-icon-url').value = "https://gcdnb.pbrd.co/images/2tAx6LlPWqWu.png?o=1";
+            settings.cloakEnabled = false;
+            applyTabCloak("Neonix's Notes", "https://gcdnb.pbrd.co/images/2tAx6LlPWqWu.png?o=1");
+        });
+
+        document.getElementById('save-settings').addEventListener('click', saveSettings);
+        document.getElementById('reset-settings').addEventListener('click', resetSettings);
+
+        document.getElementById('weather-unit').addEventListener('change', function() {
+            settings.weatherUnit = this.value;
+            initWeather();
+        });
+
+        // ========================
+        // THREE.JS BACKGROUND ENGINE
+        // ========================
         class Plane {
             constructor() {
                 this.uniforms = { time: { type: 'f', value: 0 } };
                 this.mesh = this.createMesh();
-                this.speed = 1;
+                this.speed = settings.bgAnimationSpeed || 1;
             }
             createMesh() {
                 return new THREE.Mesh(
@@ -574,13 +1406,25 @@
             requestAnimationFrame(animateHills);
         }
 
-        // --- GLOBAL INIT ---
+        // ========================
+        // GLOBAL INITIALIZATION
+        // ========================
         window.addEventListener('load', () => {
             const bar = document.getElementById('loader-bar');
             const screen = document.getElementById('loading-screen');
+            
             initHills();
             animateHills();
-            applyHolidayTheme();
+            initParticles();
+            
+            // Load saved settings
+            loadSettings();
+            
+            // Apply holiday theme if enabled
+            if (settings.holidayThemes) {
+                applyHolidayTheme();
+            }
+            
             updateDateTime();
             initWeather();
 
@@ -598,6 +1442,16 @@
                 bar.style.width = width + '%';
             }, 180);
         });
+
+        // ========================
+        // EXISTING FUNCTIONS
+        // ========================
+        function updateDateTime() {
+            const dateEl = document.getElementById('current-date');
+            const now = new Date();
+            const options = { weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+            dateEl.innerText = now.toLocaleString('en-US', options);
+        }
 
         function showSection(id, element) {
             if (element && !element.classList.contains('folder-item')) {
@@ -645,7 +1499,15 @@
             renderer.setSize(window.innerWidth, window.innerHeight);
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
+            
+            if (particlesCanvas) {
+                particlesCanvas.width = window.innerWidth;
+                particlesCanvas.height = window.innerHeight;
+            }
         };
+
+        setInterval(updateDateTime, 1000);
+        setInterval(initWeather, 600000);
     </script>
 </body>
 </html>
