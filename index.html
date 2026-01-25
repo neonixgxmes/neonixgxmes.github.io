@@ -620,6 +620,37 @@
             position: absolute; top: 8px; right: 10px; background: transparent; border: none; color: #fff; font-size: 14px; cursor: pointer;
         }
         #announcement .claim-btn { margin-top: 6px; }
+
+        /* --- PROFILE (bottom center) --- */
+        #profile-button {
+            position: fixed;
+            bottom: 18px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 3001;
+            cursor: pointer;
+        }
+        #profile-button img { width: 48px; height: 48px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.08); box-shadow: 0 6px 20px rgba(0,0,0,0.6); }
+
+        #profile-panel {
+            position: fixed;
+            bottom: 78px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 3002;
+            min-width: 320px;
+            background: rgba(0, 8, 20, 0.95);
+            border: 1px solid var(--neon-glow);
+            padding: 14px;
+            border-radius: 12px;
+            display: none;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.7);
+        }
+        #profile-panel.visible { display:block; }
+        #profile-panel .row { display:flex; gap:10px; align-items:center; margin-bottom:8px; }
+        #profile-panel input[type="text"] { flex:1; background: rgba(0,20,50,0.6); border:1px solid var(--neon-glow); color:#fff; padding:6px 8px; border-radius:6px; }
+        #profile-panel .small { font-size:12px; color:rgba(255,255,255,0.7); }
+        #profile-panel .panel-actions { display:flex; gap:8px; justify-content:center; margin-top:8px; }
     </style>
 </head>
 <body>
@@ -783,6 +814,45 @@
             <h2 id="announcement-title">V1 IS HERE!!!</h2>
             <p>Thanks for being part of the journey — claim your OG spot now.</p>
             <button id="claim-og-btn" class="settings-button claim-btn">claim ur og spot</button>
+        </div>
+    </div>
+
+    <!-- PROFILE BUTTON + PANEL -->
+    <div id="profile-button" title="Profile settings">
+        <img id="profile-avatar" src="https://static.vecteezy.com/system/resources/thumbnails/009/292/244/small/default-avatar-icon-of-social-media-user-vector.jpg" alt="Profile">
+    </div>
+
+    <div id="profile-panel" role="dialog" aria-label="Profile settings">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
+            <img id="panel-avatar-preview" src="https://static.vecteezy.com/system/resources/thumbnails/009/292/244/small/default-avatar-icon-of-social-media-user-vector.jpg" alt="Avatar" style="width:56px;height:56px;border-radius:50%;border:1px solid rgba(255,255,255,0.06)">
+            <div style="flex:1">
+                <div class="small">Signed in as</div>
+                <div id="panel-username" style="font-weight:900">Guest</div>
+            </div>
+        </div>
+
+        <div class="row">
+            <button id="google-signin" class="settings-button">Sign in with Google</button>
+            <button id="signout-btn" class="settings-button secondary">Sign out</button>
+        </div>
+
+        <div class="row">
+            <input type="text" id="username-input" placeholder="Choose a username">
+        </div>
+        <div class="small" id="username-info">You can change your username once every 7 days.</div>
+
+        <div style="margin-top:8px">
+            <label class="small">Avatar (upload)</label>
+            <input type="file" id="avatar-file" accept="image/*">
+        </div>
+        <div style="margin-top:8px">
+            <label class="small">Or avatar URL</label>
+            <input type="text" id="avatar-url" placeholder="https://example.com/avatar.png">
+        </div>
+
+        <div class="panel-actions">
+            <button id="save-profile" class="settings-button">Save</button>
+            <button id="close-profile" class="settings-button secondary">Close</button>
         </div>
     </div>
 
@@ -1629,6 +1699,127 @@
 
         // Show announcement shortly after load
         window.addEventListener('load', () => setTimeout(showAnnouncement, 1200));
+
+        // ========================
+        // PROFILE HANDLERS
+        // ========================
+        const PROFILE_KEY = 'neonix-profile';
+        const DEFAULT_AVATAR = 'https://static.vecteezy.com/system/resources/thumbnails/009/292/244/small/default-avatar-icon-of-social-media-user-vector.jpg';
+
+        function loadProfile() {
+            try {
+                const raw = localStorage.getItem(PROFILE_KEY);
+                const profile = raw ? JSON.parse(raw) : { signedIn:false, name:'Guest', email:'', avatar:DEFAULT_AVATAR, lastNameChange:0 };
+                window._neonix_profile = profile;
+                renderProfileUI();
+            } catch (e) { console.warn('loadProfile error', e); window._neonix_profile = { signedIn:false, name:'Guest', email:'', avatar:DEFAULT_AVATAR, lastNameChange:0 }; }
+        }
+
+        function saveProfile() {
+            try {
+                if (!window._neonix_profile) return;
+                localStorage.setItem(PROFILE_KEY, JSON.stringify(window._neonix_profile));
+            } catch (e) { console.warn('saveProfile error', e); }
+        }
+
+        function renderProfileUI() {
+            const p = window._neonix_profile || {};
+            const avatarEls = [document.getElementById('profile-avatar'), document.getElementById('panel-avatar-preview')];
+            avatarEls.forEach(el => { if (el) el.src = p.avatar || DEFAULT_AVATAR; });
+            const nameEl = document.getElementById('panel-username'); if (nameEl) nameEl.innerText = p.name || 'Guest';
+            const usernameInput = document.getElementById('username-input'); if (usernameInput) usernameInput.value = p.name || '';
+            // Show/hide sign out depending on signedIn
+            const signout = document.getElementById('signout-btn'); if (signout) signout.style.display = p.signedIn ? 'inline-block' : 'none';
+        }
+
+        function toggleProfilePanel() {
+            const panel = document.getElementById('profile-panel');
+            if (!panel) return;
+            panel.classList.toggle('visible');
+        }
+
+        async function signInWithGoogle() {
+            // Placeholder: real Google sign-in requires OAuth client setup.
+            // Here we simulate by asking the user for a name/email.
+            try {
+                const email = prompt('Enter your Google email (simulation):');
+                if (!email) return;
+                const name = prompt('Enter your display name (simulation):', email.split('@')[0]) || email.split('@')[0];
+                window._neonix_profile = window._neonix_profile || {};
+                window._neonix_profile.signedIn = true;
+                window._neonix_profile.email = email;
+                // Only set name if not present
+                if (!window._neonix_profile.name || window._neonix_profile.name === 'Guest') {
+                    window._neonix_profile.name = name;
+                    window._neonix_profile.lastNameChange = Date.now();
+                }
+                saveProfile();
+                renderProfileUI();
+                applyTabCloak(window._neonix_profile.name || '', window._neonix_profile.avatar || '');
+            } catch (e) { console.warn('signIn error', e); }
+        }
+
+        function signOut() {
+            try {
+                window._neonix_profile = { signedIn:false, name:'Guest', email:'', avatar:DEFAULT_AVATAR, lastNameChange:0 };
+                saveProfile();
+                renderProfileUI();
+                applyTabCloak("Neonix's Notes", 'https://gcdnb.pbrd.co/images/2tAx6LlPWqWu.png?o=1');
+            } catch (e) { console.warn('signOut error', e); }
+        }
+
+        function canChangeName() {
+            const p = window._neonix_profile || {};
+            if (!p.lastNameChange) return true;
+            const diff = Date.now() - p.lastNameChange;
+            return diff >= (7 * 24 * 60 * 60 * 1000);
+        }
+
+        function handleUsernameSave() {
+            const input = document.getElementById('username-input');
+            if (!input) return;
+            const desired = (input.value || '').trim();
+            if (!desired) return;
+            if (!canChangeName() && window._neonix_profile && window._neonix_profile.name !== desired) {
+                alert('You can only change your username once every 7 days.');
+                input.value = window._neonix_profile.name || '';
+                return;
+            }
+            if (window._neonix_profile.name !== desired) {
+                window._neonix_profile.name = desired;
+                window._neonix_profile.lastNameChange = Date.now();
+            }
+            saveProfile();
+            renderProfileUI();
+            applyTabCloak(window._neonix_profile.name, window._neonix_profile.avatar);
+        }
+
+        function handleAvatarFile(file) {
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const data = e.target.result;
+                window._neonix_profile.avatar = data;
+                saveProfile();
+                renderProfileUI();
+                applyTabCloak(window._neonix_profile.name, window._neonix_profile.avatar);
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // Attach UI listeners
+        (function attachProfileListeners(){
+            const btn = document.getElementById('profile-button'); if (btn) btn.addEventListener('click', toggleProfilePanel);
+            const signin = document.getElementById('google-signin'); if (signin) signin.addEventListener('click', signInWithGoogle);
+            const signout = document.getElementById('signout-btn'); if (signout) signout.addEventListener('click', signOut);
+            const closeBtn = document.getElementById('close-profile'); if (closeBtn) closeBtn.addEventListener('click', toggleProfilePanel);
+            const saveBtn = document.getElementById('save-profile'); if (saveBtn) saveBtn.addEventListener('click', handleUsernameSave);
+            const fileInput = document.getElementById('avatar-file'); if (fileInput) fileInput.addEventListener('change', (e) => handleAvatarFile(e.target.files[0]));
+            const urlInput = document.getElementById('avatar-url'); if (urlInput) urlInput.addEventListener('change', (e) => { window._neonix_profile.avatar = e.target.value || DEFAULT_AVATAR; saveProfile(); renderProfileUI(); applyTabCloak(window._neonix_profile.name, window._neonix_profile.avatar); });
+        })();
+
+        // Initialize profile on load
+        window.addEventListener('load', loadProfile);
 
         setInterval(updateDateTime, 1000);
         setInterval(initWeather, 600000);
