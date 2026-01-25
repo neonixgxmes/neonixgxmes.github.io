@@ -914,6 +914,54 @@
                     <img src="https://cdn.jsdelivr.net/gh/gn-math/gn-math-DONTDMCA@main/favicon.png" alt="Gn-Math">
                     <span>Gn-Math</span>
                 </div>
+                <div class="dropdown-item" onclick="openSiteIframe('https://neonixgxmes.github.io/stuff/twistedstudios.html','Twisted Education')">
+                    <img src="https://cdn.discordapp.com/icons/1286848564554633226/a_103e87bafaff0a0cae96e716beb6c9de.webp?size=80&quality=lossless" alt="Twisted">
+                    <span>Twisted Education</span>
+                </div>
+                <div class="dropdown-item" onclick="openSiteIframe('https://neonixgxmes.github.io/stuff/elitesgames.html','Elites Games')">
+                    <img src="https://gcdnb.pbrd.co/images/lekkbJRsjl1p.png?o=1" alt="Elites">
+                    <span>Elites Games</span>
+                </div>
+                <div class="dropdown-item" onclick="openSiteIframe('https://neonixgxmes.github.io/stuff/gnmath.html','Gn-Math')">
+                    <img src="https://cdn.jsdelivr.net/gh/gn-math/gn-math-DONTDMCA@main/favicon.png" alt="Gn-Math">
+                    <span>Gn-Math</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sites folder (copied from About:Blank) -->
+        <div class="nav-item folder-item">
+            <img src="https://cdn-icons-png.flaticon.com/512/3037/3037366.png" class="folder-icon" alt="Sites">
+            <div class="nav-label">Sites <span style="font-size:14px">⌵</span></div>
+            <div class="dropdown-menu">
+                <div class="dropdown-item" onclick="openLauncher('Pizza Edition', 'https://pizzaedition.win//')">
+                    <img src="https://gcdnb.pbrd.co/images/LcQ01msjLL0e.png?o=1" alt="Pizza">
+                    <span>Pizza Edition</span>
+                </div>
+                <div class="dropdown-item" onclick="openLauncher('Velara', 'https://ilovelittlekids.buzz//')">
+                    <img src="https://gcdnb.pbrd.co/images/Q8j4sAZ0DY7A.png?o=1" alt="Velara">
+                    <span>Velara</span>
+                </div>
+                <div class="dropdown-item" onclick="openLauncher('Geometry Learn V4', 'https://dsv.135.148.27.57.nip.io/')">
+                    <img src="https://dsv.135.148.27.57.nip.io/assets/img/essential/icon.ico" alt="Geometry">
+                    <span>Geometry Learn V4</span>
+                </div>
+                <div class="dropdown-item" onclick="openLauncher('Glacier Arcade', 'https://glacierarcade.win//')">
+                    <img src="https://gcdnb.pbrd.co/images/Z2LvYGxXn3GT.png?o=1" alt="Glacier">
+                    <span>Glacier Arcade</span>
+                </div>
+                <div class="dropdown-item" onclick="openLauncher('Hypackel Games', 'https://hypackel.games//')">
+                    <img src="https://gcdnb.pbrd.co/images/93ACdqHChBVP.png?o=1" alt="Hypackel">
+                    <span>Hypackel Games</span>
+                </div>
+                <div class="dropdown-item" onclick="openLauncher('SZ Games', 'https://sz-games.github.io//')">
+                    <img src="https://raw.githubusercontent.com/sz-games/home/refs/heads/main/G.png" alt="SZ">
+                    <span>SZ Games</span>
+                </div>
+                <div class="dropdown-item" onclick="openLauncher('Gn-Math', 'https://www.gn-math.dev/')">
+                    <img src="https://cdn.jsdelivr.net/gh/gn-math/gn-math-DONTDMCA@main/favicon.png" alt="Gn-Math">
+                    <span>Gn-Math</span>
+                </div>
             </div>
         </div>
 
@@ -1051,6 +1099,53 @@
 
         @media (max-width: 900px) {
             #online-count { right: 110px; top: 90px; }
+        }
+
+        /* Fullscreen site overlay */
+        #site-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.85);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 99999;
+        }
+
+        #site-overlay .overlay-inner {
+            width: 100%; height: 100%; position: relative;
+        }
+
+        #site-overlay iframe {
+            width: 100%; height: 100%; border: none; display: block;
+        }
+
+        #site-overlay .overlay-close {
+            position: absolute; top: 12px; right: 12px; z-index: 100001;
+            background: rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.06);
+            color: #fff; padding: 8px 10px; border-radius: 8px; cursor: pointer;
+        }
+
+        /* Cursor for interactive UI elements */
+        .nav-item, .dropdown-item, .settings-button, .curved-btn, button, a, .sidebar-btn, .panel-actions button, #settings-button, #profile-button, .claim-btn, .settings-option input[type='checkbox'] {
+            cursor: pointer;
+        }
+
+        /* Keep text inputs selectable and show text cursor */
+        input[type="text"], input[type="search"], input[type="email"], input[type="number"], textarea, select {
+            -webkit-user-select: text;
+            -moz-user-select: text;
+            -ms-user-select: text;
+            user-select: text;
+            cursor: text;
+        }
+
+        /* Prevent selection of most UI content to discourage copying */
+        body, html, .page-section, .top-nav, .main-container, #announcement, #settings-panel, #profile-panel, nav, .buttons-container, .partner-container {
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
         }
     </style>
 
@@ -1693,6 +1788,31 @@
             }
         }
 
+        // Open a site in a full-screen in-page iframe overlay
+        function openSiteIframe(url, title) {
+            try {
+                let overlay = document.getElementById('site-overlay');
+                if (!overlay) {
+                    overlay = document.createElement('div');
+                    overlay.id = 'site-overlay';
+                    overlay.innerHTML = `<div class="overlay-inner"><button class="overlay-close" onclick="closeSiteOverlay()">✕ Close</button><iframe id="site-overlay-iframe" src="" title="${title}"></iframe></div>`;
+                    document.body.appendChild(overlay);
+                }
+                const iframe = document.getElementById('site-overlay-iframe');
+                if (iframe) iframe.src = url;
+                overlay.style.display = 'flex';
+            } catch (e) { console.error('openSiteIframe error', e); }
+        }
+
+        function closeSiteOverlay() {
+            const overlay = document.getElementById('site-overlay');
+            if (overlay) {
+                const iframe = document.getElementById('site-overlay-iframe');
+                if (iframe) iframe.src = 'about:blank';
+                overlay.style.display = 'none';
+            }
+        }
+
         let _gamesHtmlCache = null;
         async function openGames(element) {
             const iframe = document.getElementById('games-frame');
@@ -1844,6 +1964,39 @@
                     delete sessions[id];
                     writeSessions(sessions);
                 } catch(e){}
+            });
+        })();
+
+        // ========================
+        // COPY / SELECTION / CONTEXTMENU PROTECTION
+        // ========================
+        (function protectCopying(){
+            // Prevent copy/select/context menu for non-input areas
+            document.addEventListener('copy', function(e){
+                const t = e.target;
+                if (!t.closest || !t.closest('input, textarea, select')) {
+                    e.preventDefault();
+                }
+            });
+
+            document.addEventListener('contextmenu', function(e){
+                const t = e.target;
+                if (!t.closest || !t.closest('input, textarea, select')) {
+                    e.preventDefault();
+                }
+            });
+
+            // Prevent dragging images
+            try {
+                document.querySelectorAll('img').forEach(img => { img.setAttribute('draggable', 'false'); });
+            } catch(e){}
+
+            // Prevent dragstart globally (except on inputs)
+            document.addEventListener('dragstart', function(e){
+                const t = e.target;
+                if (!t.closest || !t.closest('input, textarea')) {
+                    e.preventDefault();
+                }
             });
         })();
 

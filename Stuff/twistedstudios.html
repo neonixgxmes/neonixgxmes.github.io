@@ -1,0 +1,2441 @@
+<meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Calculas</title>
+  <link rel="icon" href="data:image/svg+xml,&lt;svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'&gt;&lt;text y='.9em' font-size='90'&gt;📐&lt;/text&gt;&lt;/svg&gt;">
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+<style>
+
+  
+  @import url('https://fonts.cdnfonts.com/css/torus');
+  
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  
+.chat-message.sunibun {
+  background: linear-gradient(90deg, #111, #222); /* dark gradient */
+  color: #00ff4c;
+  font-weight: bold;
+  font-size: 15px; /* slightly bigger */
+  padding: 14px 18px; /* slightly bigger padding */
+  border: 1px solid #333; /* subtle border */
+  border-radius: 12px;
+}
+
+/* Username with slight glow */
+.chat-message.sunibun .chat-message-user {
+  color: #05e2ab; /* username color */
+  font-weight: bold;
+  text-shadow: 0 0 2px rgba(9, 250, 74, 0.9); /* subtle, visible glow */
+  margin-bottom: 4px;
+  transition: text-shadow 0.3s ease;
+}
+
+/* Message text without glow */
+.chat-message.sunibun .chat-message-text {
+  color: #fff; /* keep text white */
+  text-shadow: none; /* no glow */
+}
+
+
+    
+    :root {
+      --bg: #0a0a0f;
+      --bg-secondary: #12121a;
+      --bg-tertiary: #1a1a25;
+      --accent: #3b82f6;
+      --accent-hover: #2563eb;
+      --text: #ffffff;
+      --text-muted: #9ca3af;
+      --border: rgba(255,255,255,0.1);
+      --success: #22c55e;
+      --error: #ef4444;
+      --warning: #f59e0b;
+    }
+    
+    [data-theme="light"] {
+      --bg: #f8fafc;
+      --bg-secondary: #e2e8f0;
+      --bg-tertiary: #cbd5e1;
+      --text: #0f172a;
+      --text-muted: #475569;
+      --border: rgba(0,0,0,0.1);
+    }
+    
+    [data-theme="purple"] {
+      --bg: #0f0a1a;
+      --bg-secondary: #1a1025;
+      --bg-tertiary: #251535;
+      --accent: #a855f7;
+      --accent-hover: #9333ea;
+    }
+    
+    body {
+      font-family: 'Torus', 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+    
+/* ===== Loading Overlay with Gradient + Stars + Starting Point ===== */
+.loading-overlay {
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(ellipse at bottom, #0b1024 0%, #000 70%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  transition: opacity 0.5s, visibility 0.5s;
+  overflow: hidden;
+}
+
+/* Star layers inside overlay */
+.loading-overlay::before,
+.loading-overlay::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  will-change: transform;
+  z-index: 0; /* behind content */
+}
+
+/* Sparse small stars with starting offset */
+.loading-overlay::before {
+  background-image:
+    radial-gradient(2px 2px at 20% 30%, #ffffff, transparent),
+    radial-gradient(2px 2px at 50% 60%, #ffffff, transparent),
+    radial-gradient(2px 2px at 80% 20%, #ffffff, transparent);
+  background-size: 200px 200px;
+  opacity: 0.7;
+  /* initial offset: start higher */
+  transform: translateY(-100px);
+  animation: overlayStarsDown 20s linear infinite;
+}
+
+/* Few bigger stars with different starting offset */
+.loading-overlay::after {
+  background-image:
+    radial-gradient(4px 4px at 30% 40%, #c7d2ff, transparent),
+    radial-gradient(4px 4px at 70% 70%, #ffffff, transparent);
+  background-size: 400px 400px;
+  opacity: 0.5;
+  transform: translateY(-150px); /* starting higher/lower than small stars */
+  animation: overlayStarsDownReverse 12s linear infinite;
+}
+
+/* Star animations with starting point */
+@keyframes overlayStarsDown {
+  0%   { transform: translate3d(0, -100px, 0); } /* starting point */
+  100% { transform: translate3d(0, 200px, 0); }
+}
+
+@keyframes overlayStarsDownReverse {
+  0%   { transform: translate3d(0, -150px, 0); } /* different start */
+  100% { transform: translate3d(0, 300px, 0); }
+}
+
+/* Keep all overlay content above stars */
+.loading-overlay > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* ===== Existing Loader & Progress CSS ===== */
+.loading-overlay.hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.loader {
+  width: 60px;
+  height: 60px;
+  border: 4px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.loading-text {
+  margin-top: 20px;
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+.loading-progress {
+  width: 200px;
+  height: 4px;
+  background: var(--border);
+  border-radius: 2px;
+  margin-top: 16px;
+  overflow: hidden;
+}
+
+.loading-progress-bar {
+  height: 100%;
+  background: var(--accent);
+  width: 0%;
+  transition: width 0.3s;
+}
+
+.skip-btn {
+  margin-top: 20px;
+  padding: 10px 24px;
+  background: var(--accent);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s;
+  font-family: inherit;
+}
+
+.skip-btn.visible {
+  opacity: 1;
+  visibility: visible;
+}
+
+.skip-btn:hover {
+  background: var(--accent-hover);
+  transform: scale(1.05);
+}
+
+    /* sunibun  */
+@keyframes glow {
+  0% { text-shadow: 0 0 5px yellow, 0 0 10px orange; }
+  50% { text-shadow: 0 0 20px yellow, 0 0 30px orange; }
+  100% { text-shadow: 0 0 5px yellow, 0 0 10px orange; }
+}
+.animate-glow {
+  animation: glow 1.5s infinite alternate;
+}
+.hidden { display: none; }
+
+    /* Modals */
+    .modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.85);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      backdrop-filter: blur(8px);
+    }
+    
+    .modal.hidden { display: none; }
+    
+    .modal-content {
+      background: var(--bg-secondary);
+      padding: 32px;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      text-align: center;
+      max-width: 400px;
+      width: 90%;
+      animation: scaleIn 0.3s ease;
+    }
+    
+    @keyframes scaleIn {
+      from { transform: scale(0.9); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+    
+    .modal-content h2 {
+      margin-bottom: 8px;
+      font-size: 24px;
+    }
+    
+    .modal-content p {
+      color: var(--text-muted);
+      margin-bottom: 20px;
+      font-size: 14px;
+    }
+    
+    .modal-content input {
+      width: 100%;
+      padding: 12px 16px;
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-size: 16px;
+      margin-bottom: 16px;
+      outline: none;
+      font-family: inherit;
+      transition: border-color 0.3s;
+    }
+    
+    .modal-content input:focus {
+      border-color: var(--accent);
+    }
+    
+    .modal-content button {
+      width: 100%;
+      padding: 12px;
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.3s;
+    }
+    
+    .modal-content button:hover {
+      background: var(--accent-hover);
+    }
+    
+    .modal-content .error {
+      color: var(--error);
+      font-size: 12px;
+      margin-top: -8px;
+      margin-bottom: 12px;
+    }
+    
+    /* Top Bar */
+    .top-bar {
+      position: fixed;
+      top: 16px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(18, 18, 26, 0.9);
+      border: 1px solid var(--border);
+      border-radius: 50px;
+      padding: 8px 24px;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      z-index: 1000;
+      backdrop-filter: blur(10px);
+      animation: slideDown 0.5s ease;
+    }
+    
+    @keyframes slideDown {
+      from { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+      to { opacity: 1; transform: translateX(-50%) translateY(0); }
+    }
+    
+    .logo {
+      width: 28px;
+      height: 28px;
+      object-fit: contain;
+      cursor: pointer;
+      transition: transform 0.3s;
+    }
+    
+    .logo:hover { transform: scale(1.1) rotate(5deg); }
+    
+    .nav-link {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: color 0.3s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    
+    .nav-link:hover { color: var(--text); }
+    .nav-link.active { color: var(--accent); }
+    
+    .nav-link svg {
+      width: 16px;
+      height: 16px;
+    }
+    
+    /* Bottom Bar */
+    .bottom-bar {
+      position: fixed;
+      bottom: 16px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(18, 18, 26, 0.9);
+      border: 1px solid var(--border);
+      border-radius: 50px;
+      padding: 10px 28px;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      z-index: 1000;
+      backdrop-filter: blur(10px);
+      animation: slideUp 0.5s ease 0.2s both;
+    }
+    
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+      to { opacity: 1; transform: translateX(-50%) translateY(0); }
+    }
+    
+    .bottom-link {
+      color: var(--text-muted);
+      font-size: 12px;
+      text-decoration: none;
+      cursor: pointer;
+      transition: color 0.3s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    
+    .bottom-link:hover { color: var(--text); }
+    
+    .bottom-link svg {
+      width: 14px;
+      height: 14px;
+    }
+    
+    .online-count {
+      color: var(--success);
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    
+    .online-dot {
+      width: 8px;
+      height: 8px;
+      background: var(--success);
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+    
+/* ===== STAR BACKGROUND (kept as-is) ===== */
+html {
+  position: relative;
+  background: radial-gradient(ellipse at bottom, #0b1024 0%, #000 70%);
+  overflow-x: hidden;
+}
+
+html::before,
+html::after {
+  content: "";
+  position: fixed;
+  inset: -50%;
+  pointer-events: none;
+  will-change: transform;
+}
+
+/* Sparse small stars (fast) */
+html::before {
+  background-image:
+    radial-gradient(2px 2px at 20% 30%, #ffffff, transparent),
+    radial-gradient(2px 2px at 50% 60%, #ffffff, transparent),
+    radial-gradient(2px 2px at 80% 20%, #ffffff, transparent);
+  background-size: 400px 400px;
+  opacity: 0.7;
+  animation: starsDownFast 30s linear infinite;
+}
+
+/* Few bigger stars (even faster) */
+html::after {
+  background-image:
+    radial-gradient(4px 4px at 30% 40%, #c7d2ff, transparent),
+    radial-gradient(4px 4px at 70% 70%, #ffffff, transparent);
+  background-size: 600px 600px;
+  opacity: 0.55;
+  animation: starsDownFaster 18s linear infinite;
+}
+
+@keyframes starsDownFast {
+  from { transform: translate3d(0, -300px, 0); }
+  to   { transform: translate3d(0, 300px, 0); }
+}
+
+@keyframes starsDownFaster {
+  from { transform: translate3d(0, -400px, 0); }
+  to   { transform: translate3d(0, 400px, 0); }
+}
+
+/* Keep content above stars */
+body {
+  position: relative;
+  z-index: 1;
+  background: transparent;
+}
+
+/* ===== MAIN CONTENT CENTERING ===== */
+.main-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: 0 20px;
+  text-align: center;
+}
+
+/* Page animations */
+.page { display: none; }
+.page.active { display: block; animation: fadeIn 0.3s ease; }
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Home Page */
+.home-title {
+  font-size: 42px;
+  font-weight: 600;
+  font-style: italic;
+  margin-bottom: 8px;
+  background: linear-gradient(135deg, var(--accent), #60a5fa);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: fadeIn 0.5s ease 0.2s both;
+}
+
+.home-subtitle {
+  color: var(--text-muted);
+  margin-bottom: 40px;
+  font-size: 14px;
+  animation: fadeIn 0.5s ease 0.3s both;
+}
+
+/* Icon Grid */
+.icon-grid {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-bottom: 32px;
+  animation: fadeIn 0.5s ease 0.4s both;
+}
+
+.icon-card {
+  width: 56px;
+  height: 56px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s;
+  text-decoration: none;
+  position: relative;
+}
+
+.icon-card:hover {
+  transform: scale(1.1) translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+}
+
+.icon-card svg, .icon-card img {
+  width: 28px;
+  height: 28px;
+}
+
+.icon-card.chatgpt { background: #1a1a1a; border: 1px solid #333; }
+.icon-card.movies { background: linear-gradient(135deg, #9333ea, #ec4899); }
+.icon-card.tiktok { background: #000; border: 1px solid #333; }
+.icon-card.twitch { background: #9146ff; }
+.icon-card.youtube { background: #ff0000; }
+.icon-card.discord { background: #5865f2; }
+
+/* Search Container */
+.search-container {
+  max-width: 400px;
+  width: 100%;
+  margin: 0 auto 32px;
+  position: relative;
+  animation: fadeIn 0.5s ease 0.5s both;
+}
+
+.search-input {
+  width: 100%;
+  padding: 14px 48px 14px 20px;
+  background: rgba(18, 18, 26, 0.8);
+  border: 1px solid var(--border);
+  border-radius: 50px;
+  color: var(--text);
+  font-size: 14px;
+  text-align: center;
+  outline: none;
+  font-family: inherit;
+  transition: all 0.3s;
+}
+
+.search-input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 20px rgba(59, 130, 246, 0.2);
+}
+
+.search-input::placeholder {
+  color: var(--text-muted);
+}
+
+.search-btn {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: var(--accent);
+  border: none;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.search-btn:hover {
+  background: var(--accent-hover);
+  transform: translateY(-50%) scale(1.1);
+}
+
+.search-btn svg {
+  width: 16px;
+  height: 16px;
+  color: white;
+}
+
+/* Discord Button */
+.discord-btn {
+  display: block;
+  max-width: 280px;
+  margin: 0 auto 24px;
+  padding: 14px 24px;
+  background: rgba(18, 18, 26, 0.8);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  color: var(--text);
+  text-decoration: none;
+  text-align: center;
+  font-size: 14px;
+  transition: all 0.3s;
+  animation: fadeIn 0.5s ease 0.6s both;
+}
+
+.discord-btn:hover {
+  background: rgba(30, 30, 40, 0.9);
+  border-color: rgba(88, 101, 242, 0.5);
+  transform: translateY(-2px);
+}
+
+/* Privacy & Terms */
+.privacy-link, .terms-link {
+  display: block;
+  text-align: center;
+  color: var(--accent);
+  font-size: 13px;
+  text-decoration: none;
+  animation: fadeIn 0.5s ease 0.7s both;
+}
+
+.privacy-link:hover, .terms-link:hover {
+  text-decoration: underline;
+}
+
+    /* Games Page */
+    .games-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 24px;
+    }
+    
+    .games-header h2 {
+      font-size: 22px;
+      font-weight: 600;
+    }
+    
+    .games-search {
+      padding: 10px 16px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-size: 13px;
+      outline: none;
+      width: 180px;
+      font-family: inherit;
+      transition: all 0.3s;
+    }
+    
+    .games-search:focus {
+      border-color: var(--accent);
+    }
+    
+    .section-title {
+      font-size: 16px;
+      font-weight: 500;
+      margin-bottom: 16px;
+      color: var(--text-muted);
+    }
+    
+    .games-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+      gap: 10px;
+      margin-bottom: 32px;
+    }
+    
+    .games-grid.popular {
+      grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+      gap: 12px;
+    }
+    
+    .game-card {
+      aspect-ratio: 1;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      cursor: pointer;
+      transition: all 0.3s;
+      position: relative;
+    }
+    
+    .game-card:hover {
+      transform: scale(1.05) translateY(-4px);
+      border-color: var(--accent);
+      box-shadow: 0 12px 32px rgba(0,0,0,0.4);
+    }
+    
+    .game-card img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    
+    .game-card .game-id {
+      position: absolute;
+      bottom: 6px;
+      left: 6px;
+      background: rgba(0,0,0,0.75);
+      padding: 3px 6px;
+      border-radius: 4px;
+      font-size: 10px;
+    }
+    
+    /* Game Player */
+    .game-player {
+      position: fixed;
+      inset: 0;
+      background: var(--bg);
+      z-index: 9000;
+      display: none;
+      flex-direction: column;
+    }
+    
+    .game-player.active { display: flex; }
+    
+    .game-player-header {
+      padding: 12px 16px;
+      background: var(--bg-secondary);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border);
+    }
+    
+    .game-player-title {
+      font-size: 15px;
+      font-weight: 600;
+    }
+    
+    .game-player-actions {
+      display: flex;
+      gap: 8px;
+    }
+    
+    .game-player-btn {
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 8px 12px;
+      color: var(--text);
+      cursor: pointer;
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      font-family: inherit;
+    }
+    
+    .game-player-btn:hover {
+      background: var(--accent);
+      border-color: var(--accent);
+    }
+    
+    .game-player-btn svg {
+      width: 14px;
+      height: 14px;
+    }
+    
+    .game-iframe-container {
+      flex: 1;
+      position: relative;
+    }
+    
+    .game-iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+    
+    /* Apps/Proxy Page */
+    .proxy-container {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 24px;
+    }
+    
+    .proxy-container h3 {
+      margin-bottom: 16px;
+      font-size: 18px;
+    }
+    
+    .proxy-input-group {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    
+    .proxy-input {
+      flex: 1;
+      padding: 14px 18px;
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      font-size: 14px;
+      outline: none;
+      font-family: inherit;
+      transition: all 0.3s;
+    }
+    
+    .proxy-input:focus {
+      border-color: var(--accent);
+    }
+    
+    .proxy-go-btn {
+      padding: 14px 28px;
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.3s;
+    }
+    
+    .proxy-go-btn:hover {
+      background: var(--accent-hover);
+    }
+    
+    .proxy-frame-container {
+      background: var(--bg-tertiary);
+      border-radius: 12px;
+      overflow: hidden;
+      min-height: 400px;
+      position: relative;
+      display: none;
+    }
+    
+    .proxy-frame-container.active { display: block; }
+    
+    .proxy-frame {
+      width: 100%;
+      height: 500px;
+      border: none;
+    }
+    
+    .proxy-loading {
+      position: absolute;
+      inset: 0;
+      background: var(--bg-tertiary);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .proxy-loading.hidden { display: none; }
+    
+    .app-links {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 16px;
+      margin-top: 24px;
+    }
+    
+    .app-link {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    
+    .app-link:hover {
+      transform: translateY(-4px);
+      border-color: var(--accent);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+    }
+    
+    .app-link svg {
+      width: 32px;
+      height: 32px;
+      color: var(--accent);
+      margin-bottom: 8px;
+    }
+    
+    .app-link span {
+      font-size: 13px;
+      font-weight: 500;
+    }
+    
+/* Chat Page */
+.chat-container {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 200px);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  overflow: hidden;
+  transition: all 0.4s ease;
+}
+
+.chat-header {
+  padding: 16px 20px;
+  background: var(--bg-tertiary);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-size: 14px;
+  color: var(--text);
+}
+
+.chat-messages {
+  flex: 1;
+  padding: 16px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  scroll-behavior: smooth;
+}
+
+.chat-message {
+  background: var(--bg-tertiary);
+  padding: 14px 18px;
+  border-radius: 14px;
+  max-width: 75%;
+  position: relative;
+  opacity: 0;
+  transform: translateY(5px);
+  animation: appear 0.5s forwards;
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.chat-message:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.25);
+}
+
+.chat-message.own {
+  background: var(--accent);
+  margin-left: auto;
+  color: #fff;
+  animation: appear 0.5s forwards;
+}
+
+.chat-message-user {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+  font-weight: 500;
+  letter-spacing: 0.3px;
+  transition: color 0.3s, text-shadow 0.3s;
+}
+
+/* Special glow for "sunibun" username */
+.chat-message-user.sunibun {
+  color: yellow;
+  font-weight: bold;
+  text-shadow: 0 0 6px yellow, 0 0 12px orange;
+  animation: glow 1.5s infinite alternate;
+}
+
+.chat-message-text {
+  font-size: 14px;
+  line-height: 1.4;
+  word-break: break-word;
+  color: var(--text);
+  transition: all 0.3s ease;
+}
+
+/* Chat input area */
+.chat-input-container {
+  padding: 16px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  gap: 12px;
+  background: var(--bg-secondary);
+}
+
+.chat-input {
+  flex: 1;
+  padding: 14px 16px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  color: var(--text);
+  font-size: 14px;
+  outline: none;
+  font-family: inherit;
+  transition: all 0.3s ease, box-shadow 0.3s;
+}
+
+.chat-input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 8px var(--accent);
+}
+
+.chat-send-btn {
+  padding: 12px 22px;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  font-family: inherit;
+  font-weight: bold;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  transition: all 0.3s ease;
+}
+
+.chat-send-btn:hover {
+  background: var(--accent-hover);
+  transform: translateY(-2px) scale(1.03);
+}
+
+/* Moderation notice */
+.moderation-notice {
+  background: var(--warning);
+  color: #000;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 12px;
+  text-align: center;
+  margin-bottom: 12px;
+  display: none;
+}
+
+.moderation-notice.visible { display: block; }
+
+/* Animations */
+@keyframes glow {
+  0% { text-shadow: 0 0 6px yellow, 0 0 12px orange; }
+  50% { text-shadow: 0 0 14px yellow, 0 0 28px orange; }
+  100% { text-shadow: 0 0 6px yellow, 0 0 12px orange; }
+}
+
+@keyframes float {
+  0% { transform: translateY(0); }
+  50% { transform: translateY(-1px); }
+  100% { transform: translateY(0); }
+}
+
+@keyframes appear {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes float {
+  0% { transform: translateY(0); }
+  50% { transform: translateY(-1px); }
+  100% { transform: translateY(0); }
+}
+
+    /* Settings Page */
+    .settings-section {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 20px;
+    }
+    
+    .settings-section h3 {
+      margin-bottom: 16px;
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .settings-section h3 svg {
+      width: 18px;
+      height: 18px;
+      color: var(--accent);
+    }
+    
+    .setting-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    
+    .setting-item:last-child { border-bottom: none; }
+    
+    .setting-label {
+      font-size: 13px;
+    }
+    
+    .setting-label small {
+      display: block;
+      color: var(--text-muted);
+      font-size: 11px;
+      margin-top: 2px;
+    }
+    
+    .toggle {
+      width: 44px;
+      height: 24px;
+      background: var(--bg-tertiary);
+      border-radius: 12px;
+      position: relative;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    
+    .toggle.active { background: var(--accent); }
+    
+    .toggle::after {
+      content: '';
+      position: absolute;
+      width: 18px;
+      height: 18px;
+      background: white;
+      border-radius: 50%;
+      top: 3px;
+      left: 3px;
+      transition: transform 0.3s;
+    }
+    
+    .toggle.active::after {
+      transform: translateX(20px);
+    }
+    
+    .theme-options {
+      display: flex;
+      gap: 10px;
+    }
+    
+    .theme-option {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: all 0.3s;
+    }
+    
+    .theme-option:hover { transform: scale(1.1); }
+    .theme-option.active { border-color: var(--accent); }
+    .theme-option.dark { background: #0a0a0f; }
+    .theme-option.light { background: #f8fafc; }
+    .theme-option.purple { background: linear-gradient(135deg, #0f0a1a, #251535); }
+    
+    .cloak-options {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    
+    .cloak-option {
+      padding: 8px 14px;
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 12px;
+      transition: all 0.3s;
+    }
+    
+    .cloak-option:hover {
+      border-color: var(--accent);
+    }
+    
+    .cloak-option.active {
+      background: var(--accent);
+      border-color: var(--accent);
+    }
+    
+.username-section {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.username-input {
+  flex: 1;
+  padding: 10px 14px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-size: 13px;
+  outline: none;
+  font-family: inherit;
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.username-input.invalid {
+  border-color: red;
+  box-shadow: 0 0 5px rgba(255,0,0,0.5);
+}
+
+.username-save-btn {
+  padding: 10px 18px;
+  background: var(--accent);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 13px;
+  font-family: inherit;
+  transition: all 0.3s;
+}
+
+.username-save-btn:hover {
+  background: var(--accent-hover);
+}
+
+.username-save-btn:disabled {
+  background: var(--text-muted);
+  cursor: not-allowed;
+}
+
+.changes-remaining {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+    
+    /* Announcement Panel */
+    .announcement-panel {
+      position: fixed;
+      top: 80px;
+      right: 20px;
+      width: 300px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--accent);
+      border-radius: 12px;
+      z-index: 9500;
+      overflow: hidden;
+      animation: slideInRight 0.4s ease;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    }
+    
+    .announcement-panel.hidden { display: none; }
+    
+    @keyframes slideInRight {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+    
+    .announcement-header {
+      background: var(--accent);
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    
+    .announcement-header span {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .live-dot {
+      width: 8px;
+      height: 8px;
+      background: white;
+      border-radius: 50%;
+      animation: pulse 1.5s infinite;
+    }
+    
+    .announcement-close {
+      background: none;
+      border: none;
+      color: white;
+      cursor: pointer;
+      font-size: 16px;
+      line-height: 1;
+      transition: transform 0.3s;
+    }
+    
+    .announcement-close:hover {
+      transform: scale(1.2);
+    }
+    
+    .announcement-body {
+      padding: 14px;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+    
+    /* Admin Panel */
+    .admin-panel {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.9);
+      z-index: 99999;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(10px);
+    }
+    
+    .admin-panel.active { display: flex; }
+    
+    .admin-content {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px;
+      width: 90%;
+      max-width: 550px;
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+    
+    .admin-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+    
+    .admin-header h2 {
+      font-size: 20px;
+      color: var(--error);
+    }
+    
+    .admin-close {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-size: 22px;
+      cursor: pointer;
+      transition: color 0.3s;
+    }
+    
+    .admin-close:hover { color: var(--text); }
+    
+    .admin-section {
+      margin-bottom: 20px;
+    }
+    
+    .admin-section h3 {
+      font-size: 14px;
+      margin-bottom: 10px;
+      color: var(--text-muted);
+    }
+    
+    .admin-input {
+      width: 100%;
+      padding: 10px 14px;
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-size: 13px;
+      outline: none;
+      margin-bottom: 10px;
+      font-family: inherit;
+    }
+    
+    .admin-input:focus {
+      border-color: var(--accent);
+    }
+    
+    .admin-btn {
+      padding: 10px 20px;
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 13px;
+      margin-right: 8px;
+      font-family: inherit;
+      transition: all 0.3s;
+    }
+    
+    .admin-btn:hover {
+      background: var(--accent-hover);
+    }
+    
+    .admin-btn.danger {
+      background: var(--error);
+    }
+    
+    .admin-btn.danger:hover {
+      background: #dc2626;
+    }
+    
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--bg-tertiary); border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+  </style>
+<style id="dark-reader-style" type="text/css">@media screen {
+html {-webkit-transition : -webkit-filter 300ms linear;}
+}</style></head>
+<body data-theme="dark">
+  <!-- Loading Overlay -->
+  <div class="loading-overlay" id="loadingOverlay">
+    <div class="loader"></div>
+    <div class="loading-text">Loading twisted...</div>
+    <div class="loading-progress">
+      <div class="loading-progress-bar" id="loadingBar" style="width: 27%;"></div>
+    </div>
+    <button class="skip-btn visible" id="skipBtn" onclick="skipLoading()">Skip Loading</button>
+  </div>
+
+  <!-- Username Modal -->
+  <div class="modal hidden" id="usernameModal">
+    <div class="modal-content">
+      <h2>Welcome to twisted education</h2>
+      <p>Choose a username to get started</p>
+      <input type="text" id="usernameInput" placeholder="Enter username..." maxlength="20">
+      <div class="error" id="usernameError"></div>
+      <button onclick="saveUsername()">Continue</button>
+    </div>
+  </div>
+
+  <!-- Admin Password Modal -->
+  <div class="modal hidden" id="adminPasswordModal">
+    <div class="modal-content">
+      <h2>Admin Access</h2>
+      <p>Enter admin password</p>
+      <input type="password" id="adminPasswordInput" placeholder="Password...">
+      <div class="error" id="adminError"></div>
+      <button onclick="verifyAdminPassword()">Unlock</button>
+    </div>
+  </div>
+
+  <!-- Admin Panel -->
+  <div class="admin-panel" id="adminPanel">
+    <div class="admin-content">
+      <div class="admin-header">
+        <h2>⚠️ Admin Panel</h2>
+        <button class="admin-close" onclick="closeAdmin()">×</button>
+      </div>
+      <div class="admin-section">
+        <h3>Announcements</h3>
+        <input type="text" class="admin-input" id="adminAnnouncement" placeholder="Announcement message...">
+        <button class="admin-btn" onclick="publishAnnouncement()">Publish</button>
+        <button class="admin-btn danger" onclick="clearAnnouncement()">Clear</button>
+      </div>
+      <div class="admin-section">
+        <h3>Site Status</h3>
+        <div class="setting-item">
+          <span class="setting-label">Shutdown Mode</span>
+          <div class="toggle" id="shutdownToggle" onclick="toggleShutdown()"></div>
+        </div>
+        <input type="text" class="admin-input" id="shutdownMessage" placeholder="Shutdown message...">
+        <input type="text" class="admin-input" id="shutdownReason" placeholder="Shutdown reason...">
+        <button class="admin-btn" onclick="saveShutdownSettings()">Save</button>
+      </div>
+      <div class="admin-section">
+        <h3>Remove Games</h3>
+        <input type="text" class="admin-input" id="removeGameIds" placeholder="Game IDs to remove (comma separated)...">
+        <button class="admin-btn danger" onclick="removeGames()">Remove Games</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Announcement Panel -->
+  <div class="announcement-panel hidden" id="announcementPanel">
+    <div class="announcement-header">
+      <span><div class="live-dot"></div> LIVE ANNOUNCEMENT</span>
+      <button class="announcement-close" onclick="dismissAnnouncement()">×</button>
+    </div>
+    <div class="announcement-body" id="announcementBody"></div>
+  </div>
+
+<!-- Top Bar -->
+<nav class="top-bar">
+  <!-- Logo -->
+  <a href="index.html">
+    <img src="https://cdn.discordapp.com/attachments/1287951689873227776/1464358798226620731/images__1___1_-removebg-preview.png?ex=69767f67&amp;is=69752de7&amp;hm=2b9829c2e0a57540efae250c2babde56a6c74eeb149be4e2dea6a7557808f7d4&amp;" alt="TWISTED" class="logo">
+  </a>
+
+  <!-- Games -->
+  <a class="nav-link" data-page="games" onclick="goToPage('games')" title="Games">
+    <img src="https://cdn.discordapp.com/attachments/1287951689873227776/1464357183239229643/image-removebg-preview_17.png?ex=69767de6&amp;is=69752c66&amp;hm=072ed288e102e672f36b65e455ffaa7f5d05fba9243f492640bd8fcb20830b41&amp;" class="nav-icon" alt="Games">
+  </a>
+
+  <!-- Apps -->
+  <a class="nav-link" data-page="apps" onclick="goToPage('apps')" title="Apps">
+    <img src="https://cdn.discordapp.com/attachments/1287951689873227776/1464357473396981812/image-removebg-preview_18.png?ex=69767e2c&amp;is=69752cac&amp;hm=803b21ef90a15226e4bf0866051008b8463cdbe6028a260ca1d24ce2739be835&amp;" class="nav-icon" alt="Apps">
+  </a>
+
+  <!-- Chat -->
+  <a class="nav-link" data-page="chat" onclick="goToPage('chat')" title="Chat">
+    <img src="https://cdn.discordapp.com/attachments/1287951689873227776/1464357473665155258/image-removebg-preview_19.png?ex=69767e2c&amp;is=69752cac&amp;hm=7d900fe2bcd9838204060f738081e71736fc237cce26ace75912a2e194bfd7e7&amp;" class="nav-icon" alt="Chat">
+  </a>
+
+  <!-- Settings -->
+  <a class="nav-link" data-page="settings" onclick="goToPage('settings')" title="Settings">
+    <img src="https://cdn.discordapp.com/attachments/1287951689873227776/1464357708483530825/image-removebg-preview_20.png?ex=69767e64&amp;is=69752ce4&amp;hm=4899daadf626a10201e237c32b8f945dae5f35f7df1202f1a54d5dbfbad88b12&amp;" class="nav-icon" alt="Settings">
+  </a>
+</nav>
+
+
+
+  <!-- Bottom Bar -->
+  <div class="bottom-bar">
+    <div class="online-count">
+      <div class="online-dot"></div>
+      <span id="onlineCount">0</span> Online
+    </div>
+    <a class="bottom-link" href="https://discord.gg/rKuch4azCU" target="_blank">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128c.126-.094.252-.192.373-.291a.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.099.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"></path></svg>
+      Discord
+    </a>
+    <a class="bottom-link" href="https://github.com" target="_blank">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"></path></svg>
+      GitHub
+    </a>
+  </div>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <!-- Home Page -->
+    <div class="page active" id="page-home">
+      <h1 class="home-title">Twisted Education </h1>
+      <p class="home-subtitle">by sunibun</p>
+ 
+      <div class="search-container">
+        <input type="text" class="search-input" id="mainSearch" placeholder="Search games or enter URL..." onkeypress="if(event.key==='Enter')handleSearch()">
+        <button class="search-btn" onclick="handleSearch()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        </button>
+      </div>
+      
+      <a class="discord-btn" href="https://discord.gg/rKuch4azCU" target="_blank">Join our Discord Server</a>
+      
+<div style="text-align: center; margin-top: 20px;">
+  <a class="privacy-link" href="privacy.html" style="
+      color: #b5b5b5;
+      text-decoration: none;
+      font-weight: 500;
+      display: inline-block;
+      margin-bottom: 8px;
+      transition: color 0.2s ease;
+  " onmouseover="this.style.color='#ffffff';" onmouseout="this.style.color='#b5b5b5';">
+    Privacy Policy
+  </a>
+  <br>
+  <a class="terms-link" href="terms.html" style="
+      color: #b5b5b5;
+      text-decoration: none;
+      font-weight: 500;
+      display: inline-block;
+      margin-top: 8px;
+      transition: color 0.2s ease;
+  " onmouseover="this.style.color='#ffffff';" onmouseout="this.style.color='#b5b5b5';">
+    Terms of Service
+  </a>
+</div>
+
+    </div>
+
+    <!-- Games Page -->
+    <div class="page" id="page-games">
+      <div class="games-header">
+        <h2>Games</h2>
+        <input type="text" class="games-search" id="gamesSearch" placeholder="Search by ID..." oninput="filterGames()">
+      </div>
+      <p class="section-title">Popular Games</p>
+      <div class="games-grid popular" id="popularGamesGrid"></div>
+      <p class="section-title">All Games</p>
+      <div class="games-grid" id="gamesGrid"></div>
+    </div>
+
+   <!-- Apps Page Shutdown -->
+<div class="page" id="page-apps">
+  <h2 style="margin-bottom: 24px; text-align: center;">Apps &amp; Calculas</h2>
+  <div class="proxy-container" style="text-align:center; padding: 50px;">
+    <!-- Shutdown Image -->
+    <img src="https://cdn.discordapp.com/attachments/1287951689873227776/1463682964855586961/image-removebg-preview_16.png?ex=6972b87c&amp;is=697166fc&amp;hm=aea0fcf3157442b338d91d53bb46d2b36e1e7b841d60ace82d14c9d18cfcaf17&amp;" alt="Calculas Shutdown" style="max-width: 300px; width: 80%; margin-bottom: 30px;">
+    
+    <!-- Shutdown Message -->
+    <div class="shutdown-notice" style="font-size: 20px; color: rgb(255, 255, 255); margin-bottom: 20px;">
+      apps is currently <strong>shut down</strong>.<br>
+      You cannot access it at this time.
+    </div>
+
+    <!-- Contact Info -->
+    <div style="font-size: 16px; color: #fff;">
+      Please contact us on <a href="https://discord.gg/rKuch4azCU" target="_blank" style="color: #7289da; text-decoration: underline;">Discord</a> for any inquiries.
+    </div>
+  </div>
+</div>
+
+
+   <!-- Chat Page -->
+    <div class="page" id="page-chat">
+      <div class="chat-container">
+        <div class="chat-header">
+          <h3>Global Chat | Keep in Mind All Messages Are Saved, And Can Be Reviewed. | And Ban's Will Happen.</h3>
+          <span class="online-count"><div class="online-dot"></div> <span id="chatOnlineCount">0</span> Online</span>
+        </div>
+        <div class="moderation-notice" id="moderationNotice"></div>
+        <div class="chat-messages" id="chatMessages"></div>
+        <div class="chat-input-container">
+          <input type="text" class="chat-input" id="chatInput" placeholder="Type a message..." maxlength="200" onkeypress="if(event.key==='Enter')sendMessage()">
+          <button class="chat-send-btn" onclick="sendMessage()">Send</button>
+        </div>
+      </div>
+    </div>
+
+
+
+
+    <!-- Settings Page -->
+    <div class="page" id="page-settings">
+      <h2 style="margin-bottom: 24px;">Settings</h2>
+      <div class="settings-section">
+        <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>Profile</h3>
+        <div class="setting-item">
+          <div class="setting-label">Username<small class="changes-remaining">Changes remaining: <span id="changesRemaining">3</span></small></div>
+          <div class="username-section">
+            <input type="text" class="username-input" id="settingsUsername" maxlength="20">
+            <button class="username-save-btn" id="usernameChangeBtn" onclick="changeUsername()">Save</button>
+          </div>
+        </div>
+      </div>
+      <div class="settings-section">
+        <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"></circle><path d="M12 3v1m0 16v1m9-9h-1M4 12H3"></path></svg>Appearance</h3>
+        <div class="setting-item">
+          <span class="setting-label">Theme</span>
+          <div class="theme-options">
+            <div class="theme-option dark active" onclick="setTheme('dark')"></div>
+            <div class="theme-option light" onclick="setTheme('light')"></div>
+            <div class="theme-option purple" onclick="setTheme('purple')"></div>
+          </div>
+        </div>
+      </div>
+      <div class="settings-section">
+        <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"></rect><path d="M3 9h18"></path></svg>Tab Cloak</h3>
+        <div class="setting-item">
+          <span class="setting-label">Disguise as</span>
+          <div class="cloak-options">
+            <div class="cloak-option active" onclick="setCloak('Calculas','📐')">Calculas</div>
+            <div class="cloak-option" onclick="setCloak('Google','https://www.google.com/favicon.ico')">Google</div>
+            <div class="cloak-option" onclick="setCloak('Google Drive','https://ssl.gstatic.com/images/branding/product/1x/drive_2020q4_32dp.png')">Drive</div>
+            <div class="cloak-option" onclick="setCloak('Classroom','https://ssl.gstatic.com/classroom/favicon.png')">Classroom</div>
+          </div>
+        </div>
+      </div>
+      <div class="settings-section">
+        <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path></svg>Performance</h3>
+        <div class="setting-item">
+          <div class="setting-label">Animations<small>Disable for better performance</small></div>
+          <div class="toggle active" id="animationsToggle" onclick="toggleAnimations()"></div>
+        </div>
+        <div class="setting-item">
+          <div class="setting-label">Visual Effects<small>Blur, shadows, etc.</small></div>
+          <div class="toggle active" id="effectsToggle" onclick="toggleEffects()"></div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Game Player -->
+  <div class="game-player" id="gamePlayer">
+    <div class="game-player-header">
+      <button class="game-player-btn" onclick="closeGame()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"></path></svg>
+        Back
+      </button>
+      <span class="game-player-title" id="gameTitle">Game</span>
+      <div class="game-player-actions">
+        <button class="game-player-btn" onclick="reloadGame()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6M1 20v-6h6"></path><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+          Reload
+        </button>
+        <button class="game-player-btn" onclick="fullscreenGame()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path></svg>
+          Fullscreen
+        </button>
+      </div>
+    </div>
+    <div class="game-iframe-container">
+      <script>
+</script>
+
+      <div class="loading-overlay" id="gameLoading">
+        <div class="loader"></div>
+        <div class="loading-text">Loading game...</div>
+        <div class="loading-progress">
+          <div class="loading-progress-bar" id="gameLoadingBar"></div>
+        </div>
+        <button class="skip-btn" id="gameSkipBtn" onclick="skipGameLoading()">Skip Loading</button>
+      </div>
+      <iframe id="gameFrame" class="game-iframe" allowfullscreen="" allow="autoplay; fullscreen; gamepad"></iframe>
+    </div>
+  </div>
+
+  <script>
+// ========== CONFIGURATION ==========
+const SPECIAL_USERS = ['sunibun', 'mcthug','normidev','EnnZnoiaa(Tester)'];
+const TAKEN_USERNAMES = ['sunibun', "mcthug","normidev",'EnnZnoiaa(Tester)'];
+const POPULAR_GAMES = [117, 66, 27, 179, 264];
+const TOTAL_GAMES = 531;
+const ADMIN_PASSWORD = 'twistedislowkeythebestsitern2012';
+const BLOCKED_WORDS = [
+  // ===== STRONG PROFANITY / OBSCENE / SEXUAL / VIOLENT WORDS (~750) =====
+  'fuck','fucks','fucking','fucked','fucker','fuckers','fuckface','fuckhead','fuckoff','fuckboy','fuckwad','niger','nigeria','penus','penis',
+  'shit','shits','shitty','shithead','shitface','shitbag','shitstain','shitshow','shitstorm','bullshit','bullshitter',
+  'bitch','bitches','bitching','bitchy','bitchface','bitchass','bitchmade','bitchfuck','bitchslap',
+  'ass','asses','asshole','assholes','asshat','assclown','asswipe','asslicker','assface','assbag','asshat','asslick','asslicked',
+  'dick','dicks','dickhead','dickface','dickbag','dickhole','dickwad','dickrider','dicklick','dicksucker',
+  'cock','cocks','cockhead','cockface','cockhole','cockbag','cockbite','cockrider','cocklick','cocky',
+  'cunt','cunts','cuntface','cuntbag','cuntlicker','cunthead','cuntlick','cuntlicked','cuntpunch',
+  'pussy','pussies','pussyface','pussylicker','pussyass','pussylick','pussyfucker','pussygrab',
+  'whore','whores','whorebag','whoreface','whoremonger','slut','sluts','slutbag','slutface','slutty','slutwalk',
+  'bastard','bastards','motherfucker','motherfuckers','fatherfucker','fucknut','fucky','fuckinghell',
+  'jerk','jerks','jerkoff','jerkoffs','jackass','jackasses','prick','pricks','prickface','prickhead','prickbag',
+  'twat','twats','twatface','twatwaffle','retard','retards','retarded','moron','morons','idiot','idiots','imbecile','imbeciles','dunce',
+  'dumb','dumber','dumbass','dumbasses','dumbfuck','dumbshit','loser','losers','scumbag','scumbags','scum','trash','garbage','dumpster','crud','crappy','craphead','crapbag',
+  'piss','pissed','pissing','pisshead','pissbaby','pissbag','peepee','urinate','vomit','puke','barf','retch','spew','spit','spitter','drool','saliva','vomiter',
+  'porn','porno','pornography','sex','sexual','sexualized','horny','fetish','fetishized','kink','kinky','masturbate','masturbating','masturbation','blowjob','handjob','cum','cumming','cumshot','cumdump','orgy','threesome','intercourse','anal','anus','balls','ballbag','balllicker','taint','fucktoy','sexslave',
+  ,'damn','https','dammit','goddamn','bloody','devil','evil','vile','filthy','nasty','gross','disgusting','slime','slimy','toxic','filth','menace','degenerate','sick','twisted','corrupt','violent','abuse','abuser','assault','murder','kill','killed','killing','die','dead','death','raped','raping','rape','rapist','pervert','perverted','creep','creepy','incel','stalker','terror','threat','poison','harm','danger','attack','injury','bruise','blood','wound','stab','slash','shoot','burn','explode','blowup','wreck','destroy','smash','crash','wrecked','freaked','junky','junkie','addict','drugged','drunk','high','alcohol','weed','cocaine','meth','heroin','pill','tablet','overdose','vomited','passedout','passed out','hungover','lazy','sloppy','silly','idiotic','clown','dolt','doofus','twit','moronic','fool','imbecilic','garbage','trashcan','trashbag','poop','pee','yuck','stink','rot','filthy','gross','smelly','stench','vomitus','horrible','disgusted','disgusting','repulsive','abominable','hideous','vulgar','foul','nasty','degenerate','evil','malicious','malevolent','sinister','monstrous','heinous','atrocious','horrendous','brutal','savage','violent','cruel','barbaric','despicable','malignant','demented','insane','psychotic','deranged','twisted','sickening','perverted','corrupted','cursed','damned','blasphemous','infamous','notorious','horrific','gruesome','ghastly','macabre','grisly','ghoulish','abusive','oppressive','tyrannical','harsh','brutish','rude','mean','nasty','vicious','malicious','evilness','wicked','freak','freaked','disgrace','humiliate','humiliated','shame','shamed','embarrass','embarrassed','idiocy','insult','insulted','mock','mocked','scorn','scorned','ridicule','ridiculed','demean','demeaned','offend','offended','anger','angry','mad','furious','enraged','outraged','furiousness','wrath','fury','hatred','hostile','aggressive','fight','fighting','war','battle','combat','kill','murder','slay','slaughter','massacre','execute','execution','hang','behead','poison','burn','torture','tormented','threat','threaten','terror','panic','fear','afraid','scared','fright','frighten','horrified','panicattack','anxiety','stress','trauma','traumatized','depressed','depression','suicide','selfharm','cut','bleed','bleeding','bruise','injured','wounded','sick','ill','disease','virus','infection','plague','epidemic','contagion','toxic','danger','hazard','risk','peril','crisis','chaos','disaster','catastrophe','emergency','urgent','critical','dangerous','threatening','alarming','menace','predator','stalker','criminal','felon','robber','thief','mugger','pirate','hacker','scammer','con','fraud','deceit','liar','lying','cheat','cheater','corrupt','dishonest','fraudulent','illegal','lawless','outlaw','bandit','gangster','mobster','terrorist','extremist','radical','fanatic','zealot','cultist','sect','tyrant','dictator','oppressor','bully','bullying','harasser','abuser','perpetrator','predator','molester','stalker','spy','intruder','invader','thief','robber','smuggler','poacher','killer','slayer','wrecker','destroyer','saboteur','attacker','invader','raider','looter','vandals','vandal','pirate','poisoner','poisoning','drugdealer','dealer','pusher','smuggler','criminal','gang','mob','terror','terrorist','killer','murderer','thief','robber','assassin','hitman','hiredgun','brigand','raider','looter','hooligan','villain','enemy','foe','opponent','competitor','challenger','rival','adversary','antagonist','oppressor','dictator','tyrant','madman','insane','deranged','psychopath','sociopath','maniac','lunatic','madwoman','crazy','freak','freakish','monster','beast','creature','mutant','zombie','vampire','werewolf','demon','devil','spirit','ghost','ghoul','phantom','specter','shade','fiend','ogre','troll','witch','wizard','sorcerer','sorceress','necromancer','warlock','warrior','soldier','fighter','gladiator','champion','hero','villain','antagonist','enemy','invader','intruder','raider','bandit','robber','killer','slayer','destroyer','hacker','scammer','spy','saboteur','pirate','gangster','criminal','fraud','cheater','conman','liar','bully','abuser','oppressor','terrorist','fanatic','cultist','madman','lunatic','psycho','deranged','freak','monster','beast','fiend','demon','devil','ghost','ghoul','zombie','vampire','witch','wizard','necromancer','dragon','giant','giantess','troll','ogre','witch','wizard','warlock','sorcerer','sorceress','beastman','beastwoman','nigga','nigger','nga','niga','niqa','nicker','n i g g a','nigar','nigaga','moderator','tester','dev','developer','owner','mod','lydia','tishuba', 
+
+  // ===== NUMBERS =====
+  '0','1','2','3','4','5','6','7','8','9',
+
+  // ===== EXTREME SPECIAL CHARACTERS (~150+) =====
+  '!','"','#','$','%','&',"'",'(',')','*','+',
+  ',', '-', '.', '/', ':',';','<','=','>','?',
+  '@','[','\\',']','^','_','`','{','|','}','~',
+  '¡','¿','§','¶','©','®','™','°','±','÷','×',
+  '¢','£','¥','€','₿','₹','₽','₩','₪','₫',
+  '…','–','—','•','‰','‹','›','«','»',
+  '‘','’','‚','“','”','„','∞','≠','≈','≤','≥','√','∑','∏','∫','∆','∂',
+  '⊕','⊗','⊥','∩','∪','∈','∉',
+  '←','→','↑','↓','↔','↕','⇐','⇒','⇔',
+  '■','□','▪','▫','▲','▼','◆','◇','●','○',
+  '\u200B','\u200C','\u200D','\uFEFF',
+  '、','。','「','」','『','』','【','】','〈','〉','《','》',
+  '※','‽','⁂','⁄','⁎','⁑','⁓','⁕','⁖','⁘','⁙',
+
+  // ===== EMOJI / SYMBOLS (~100+) =====
+  '😀','😁','😂','🤣','😃','😄','😅','😆','😉','😊','😋','😎','😍','😘','🥰','😗','😙','😚','🙂','🤗','🤩','🤔','🤨','😐','😑','😶','🙄','😏','😣','😥','😮','🤐','😯','😪','😫','😴','😌','😛','😜','😝','🤤','😒','😓','😔','😕','🙃','🤑','😲','☹','🙁','😖','😞','😟','😤','😢','😭','😦','😧','😨','😩','🤯','😬','😰','😱','🥵','🥶','😳','🤪','😵','😡','😠','🤬','😷','🤒','🤕','🤢','🤮','🤧','😇','🥳','🥴','🥺','🤠','🤡','🤥','🤫','🤭','🧐','🤓','💀','☠','👿','🔥','💩'
+];
+
+// Custom games configuration - add custom iframe URLs and cover images here
+const CUSTOM_GAMES = {
+  134: { url: 'https://next-education-learning.site/p.html', image: 'https://upload.wikimedia.org/wikipedia/en/9/90/The_DuckDuckGo_Duck.png' },
+  132: { url: 'https://question.sdao.me/iframe/t.html', image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ2PPlC0u6Fp_bCv7QeJ-ercwiLyj3vG5zkZA&s' },
+  131: { url: 'https://question.sdao.me/iframe/gta.html', image: 'https://cdn.jsdelivr.net/gh/gn-math/covers@main/652.png' },
+  133: { url: 'https://question.sdao.me/service/uv/hvtrs8%2F-nmweg%2Cfwn-', image: 'https://global.freetls.fastly.net/stuff/games/roblox.png' }
+};
+
+let removedGames = JSON.parse(localStorage.getItem('removedGames') || '[]');
+let currentGameId = null;
+let adminTriggerActive = false;
+
+// ========== FIREBASE ==========
+const firebaseConfig = {
+  apiKey: "AIzaSyBRh5F4faUoqx3PRtZnIuq0KneNjS3JujM",
+  authDomain: "twisted-c49d0.firebaseapp.com",
+  databaseURL: "https://twisted-c49d0-default-rtdb.firebaseio.com",
+  projectId: "twisted-c49d0",
+  storageBucket: "twisted-c49d0.firebasestorage.app",
+  messagingSenderId: "119811030454",
+  appId: "1:119811030454:web:95c106bf758620bc3c9517"
+};
+
+firebase.initializeApp(firebaseConfig);
+const database = firebase.database();
+const sessionId = `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+
+// ========== LOADING SCREEN ==========
+let loadingStart = Date.now();
+let loadingInterval;
+
+function startLoading() {
+  const bar = document.getElementById('loadingBar');
+  const skipBtn = document.getElementById('skipBtn');
+  let progress = 0;
+  const deviceSpeed = navigator.hardwareConcurrency || 4;
+  const loadTime = Math.max(10000, 15000 - (deviceSpeed * 500));
+
+  loadingInterval = setInterval(() => {
+    progress += 100 / (loadTime / 100);
+    bar.style.width = Math.min(progress, 100) + '%';
+
+    if (Date.now() - loadingStart > 2000) {
+      skipBtn.classList.add('visible');
+    }
+
+    if (progress >= 100) {
+      clearInterval(loadingInterval);
+      hideLoading();
+    }
+  }, 100);
+}
+
+function skipLoading() {
+  clearInterval(loadingInterval);
+  hideLoading();
+}
+
+function hideLoading() {
+  document.getElementById('loadingOverlay').classList.add('hidden');
+  checkUsername();
+  initFirebase();
+}
+
+// ========== USERNAME SYSTEM ==========
+function containsBadWord(text) {
+  if (!text) return false;
+  const lower = text.toLowerCase();
+  return BLOCKED_WORDS.some(word => lower.includes(word.toLowerCase()));
+}
+
+function checkUsername() {
+  const username = localStorage.getItem('username');
+  if (!username) {
+    document.getElementById('usernameModal').classList.add('active');
+  } else {
+    document.getElementById('settingsUsername').value = username;
+    applySpecialUsernameStyle(username);
+    updateChangesRemaining();
+  }
+}
+
+function saveUsername() {
+  const input = document.getElementById('usernameInput');
+  const error = document.getElementById('usernameError');
+  const username = input.value.trim();
+  const lowerName = username.toLowerCase();
+
+  if (lowerName === 'sunibun') {
+    error.textContent = 'This username is reserved';
+    input.classList.add('invalid');
+    return;
+  } else {
+    input.classList.remove('invalid');
+  }
+
+  if (username.length < 3) {
+    error.textContent = 'Username must be at least 3 characters';
+    return;
+  }
+
+  if (containsBadWord(username)) {
+    error.textContent = 'Username contains inappropriate words';
+    return;
+  }
+
+  if (TAKEN_USERNAMES.includes(lowerName)) {
+    error.textContent = 'Username already taken';
+    return;
+  }
+
+  localStorage.setItem('username', username);
+  localStorage.setItem('usernameChanges', '4');
+  document.getElementById('usernameModal').classList.remove('active');
+  document.getElementById('settingsUsername').value = username;
+  applySpecialUsernameStyle(username);
+  updateChangesRemaining();
+}
+
+function changeUsername() {
+  const input = document.getElementById('settingsUsername');
+  const changes = parseInt(localStorage.getItem('usernameChanges') || '4');
+  const username = input.value.trim();
+  const lowerName = username.toLowerCase();
+
+  if (lowerName === 'sunibun') {
+    alert('This username is reserved');
+    return;
+  }
+
+  if (changes <= 0) {
+    alert('No username changes remaining');
+    return;
+  }
+
+  if (username.length < 3) {
+    alert('Username must be at least 3 characters');
+    return;
+  }
+
+  if (containsBadWord(username)) {
+    alert('Username contains inappropriate words');
+    return;
+  }
+
+  if (TAKEN_USERNAMES.includes(lowerName)) {
+    alert('Username already taken');
+    return;
+  }
+
+  localStorage.setItem('username', username);
+  localStorage.setItem('usernameChanges', (changes - 1).toString());
+  applySpecialUsernameStyle(username);
+  updateChangesRemaining();
+  alert('Username changed successfully!');
+}
+
+function updateChangesRemaining() {
+  const changes = parseInt(localStorage.getItem('usernameChanges') || '4');
+  document.getElementById('changesRemaining').textContent = changes;
+  document.getElementById('usernameChangeBtn').disabled = changes <= 0;
+}
+
+
+// ========== SPECIAL SUNIBUN STYLE ==========
+function applySpecialUsernameStyle(username) {
+  const input = document.getElementById('settingsUsername');
+  if (username.toLowerCase() === 'sunibun') {
+    input.style.color = 'yellow';
+    input.style.fontWeight = 'bold';
+    input.style.transition = 'all 0.5s ease';
+    input.style.textShadow = '0 0 10px yellow, 0 0 20px orange';
+    input.classList.add('animate-glow');
+  } else {
+    input.style.color = '';
+    input.style.fontWeight = '';
+    input.style.textShadow = '';
+    input.classList.remove('animate-glow');
+  }
+}
+
+// ========== INIT ==========
+checkUsername();
+    
+    // ========== FIREBASE INIT ==========
+    function initFirebase() {
+      // Presence tracking
+      const presenceRef = database.ref(`presence/${sessionId}`);
+      presenceRef.set({ online: true, lastSeen: Date.now() });
+      presenceRef.onDisconnect().remove();
+      
+      setInterval(() => {
+        presenceRef.set({ online: true, lastSeen: Date.now() });
+      }, 30000);
+      
+      // Online count
+      database.ref('presence').on('value', snap => {
+        const count = snap.val() ? Object.keys(snap.val()).length : 0;
+        document.getElementById('onlineCount').textContent = count;
+        document.getElementById('chatOnlineCount').textContent = count;
+      });
+      
+      // Chat messages
+      database.ref('globalChat/messages')
+  .orderByChild('timestamp')
+  .limitToLast(50)
+  .on('value', snap => {
+    renderMessages(snap.val() || {});
+  });
+      
+      // Announcements
+      database.ref('config/announcement').on('value', snap => {
+        const announcement = snap.val();
+        const shownKey = `announcement_${announcement}`;
+        if (announcement && !sessionStorage.getItem(shownKey)) {
+          showAnnouncement(announcement);
+          sessionStorage.setItem(shownKey, 'true');
+          setTimeout(() => dismissAnnouncement(), 20000);
+        }
+      });
+      
+      // Config
+      database.ref('config').on('value', snap => {
+        const config = snap.val() || {};
+        if (config.shutdown && !document.getElementById('adminPanel').classList.contains('active')) {
+          document.body.innerHTML = `
+            <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;background:var(--bg);color:var(--text);text-align:center;padding:20px;">
+              <h1 style="font-size:42px;margin-bottom:16px;">Oops, Look like we ran into a problem.</h1>
+              <p style="font-size:16px;color:var(--text-muted);margin-bottom:8px;">${config.shutdownMessage || 'The site is currently offline.'}</p>
+              <p style="font-size:13px;color:var(--text-muted);">${config.shutdownReason || ''}</p>
+            </div>
+          `;
+        }
+        if (config.games) {
+          removedGames = Object.keys(config.games).filter(id => !config.games[id]).map(Number);
+        }
+      });
+      
+      // Render games
+      renderGames();
+    }
+    
+let canSend = true; // client-side cooldown flag
+const cooldown = 10000; // 10 seconds
+
+function sendMessage() {
+  const input = document.getElementById('chatInput');
+  const notice = document.getElementById('moderationNotice');
+  const text = input.value.trim();
+  const username = localStorage.getItem('username');
+
+  if (!text || !username) return;
+
+  // Profanity filter
+  if (containsBadWord(text)) {
+    notice.textContent = '⚠️ Message blocked: Contains inappropriate content';
+    notice.classList.add('visible');
+    setTimeout(() => notice.classList.remove('visible'), 3000);
+    return;
+  }
+
+  // Cooldown check
+  if (!canSend) {
+    notice.textContent = '⏳ Please wait 10 seconds before sending another message';
+    notice.classList.add('visible');
+    return;
+  }
+
+  // Send message to Firebase
+  database.ref('globalChat/messages').push({
+    text,
+    user: username,
+    timestamp: Date.now()
+  });
+
+  input.value = '';
+  notice.textContent = '';
+  canSend = false; // start cooldown
+
+  // Start 10-second countdown
+  let timeLeft = cooldown / 1000;
+  notice.textContent = `⏳ Please wait ${timeLeft} seconds before sending another message`;
+  notice.classList.add('visible');
+
+  const cooldownInterval = setInterval(() => {
+    timeLeft--;
+    if (timeLeft > 0) {
+      notice.textContent = `⏳ Please wait ${timeLeft} seconds before sending another message`;
+    } else {
+      canSend = true;
+      notice.textContent = '';
+      notice.classList.remove('visible');
+      clearInterval(cooldownInterval);
+    }
+  }, 1000);
+}
+
+// renderMessages – SAFE + sunibun highlight (non-breaking)
+function renderMessages(messages) {
+  const container = document.getElementById('chatMessages');
+  const currentUser = localStorage.getItem('username');
+  container.innerHTML = '';
+
+  Object.entries(messages || {})
+    .sort((a, b) => (a[1]?.timestamp || 0) - (b[1]?.timestamp || 0))
+    .forEach(([id, msg]) => {
+      // HARD GUARD – prevents crashes
+      if (!msg || !msg.user || !msg.text) return;
+
+      const div = document.createElement('div');
+      div.className = `chat-message${msg.user === currentUser ? ' own' : ''}`;
+
+      // ONLY sunibun gets special class
+const usernameLower = msg.user.toLowerCase();
+
+if (SPECIAL_USERS.includes(usernameLower)) {
+  div.classList.add('sunibun'); 
+}
+
+      div.innerHTML = `
+        <div class="chat-message-user">
+          ${escapeHtml(msg.user)} • ${new Date(msg.timestamp).toLocaleTimeString()}
+        </div>
+        <div class="chat-message-text">
+          ${escapeHtml(msg.text)}
+        </div>
+      `;
+
+      container.appendChild(div);
+    });
+
+  container.scrollTop = container.scrollHeight;
+}
+
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+
+    
+    // ========== ANNOUNCEMENTS ==========
+    function showAnnouncement(text) {
+      document.getElementById('announcementBody').textContent = text;
+      document.getElementById('announcementPanel').classList.remove('hidden');
+    }
+    
+    function dismissAnnouncement() {
+      document.getElementById('announcementPanel').classList.add('hidden');
+    }
+    
+    // ========== NAVIGATION ==========
+    function goToPage(page) {
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+      document.getElementById(`page-${page}`).classList.add('active');
+      document.querySelector(`.nav-link[data-page="${page}"]`)?.classList.add('active');
+      
+      if (page === 'games') renderGames();
+    }
+    
+    // ========== GAMES ==========
+    function renderGames() {
+      const popularGrid = document.getElementById('popularGamesGrid');
+      const allGrid = document.getElementById('gamesGrid');
+      const searchQuery = document.getElementById('gamesSearch')?.value || '';
+      
+      // Popular games
+      popularGrid.innerHTML = '';
+      POPULAR_GAMES.forEach(id => {
+        if (removedGames.includes(id)) return;
+        if (searchQuery && !id.toString().includes(searchQuery)) return;
+        popularGrid.appendChild(createGameCard(id));
+      });
+      
+      // All games
+      allGrid.innerHTML = '';
+      for (let i = 0; i < Math.min(TOTAL_GAMES, 542); i++) {
+        if (removedGames.includes(i)) continue;
+        if (searchQuery && !i.toString().includes(searchQuery)) continue;
+        allGrid.appendChild(createGameCard(i));
+      }
+    }
+    
+    function createGameCard(id) {
+      const customGame = CUSTOM_GAMES[id];
+      const imageUrl = customGame?.image || `https://cdn.jsdelivr.net/gh/gn-math/covers@main/${id}.png`;
+      
+      const card = document.createElement('div');
+      card.className = 'game-card';
+      card.onclick = () => openGame(id);
+      card.innerHTML = `
+        <img src="${imageUrl}" alt="Game ${id}" onerror="this.style.display='none'">
+        <span class="game-id">${id}</span>
+      `;
+      return card;
+    }
+    
+    function filterGames() {
+      renderGames();
+    }
+    
+    function openGame(id) {
+      currentGameId = id;
+      const customGame = CUSTOM_GAMES[id];
+      const url = customGame?.url || `https://question.sdao.me/iframe/${id}.html`;
+      
+      document.getElementById('gameTitle').textContent = `Game ${id}`;
+      document.getElementById('gameFrame').src = '';
+      document.getElementById('gamePlayer').classList.add('active');
+      document.getElementById('gameLoading').classList.remove('hidden');
+      
+      // Admin trigger (Game 155)
+      if (id === 155) {
+        adminTriggerActive = true;
+        setTimeout(() => { adminTriggerActive = true; }, 1);
+      }
+      
+      // Loading with device adaptation
+      const bar = document.getElementById('gameLoadingBar');
+      const skipBtn = document.getElementById('gameSkipBtn');
+      let progress = 0;
+      const deviceSpeed = navigator.hardwareConcurrency || 4;
+      const loadTime = Math.max(10000, 15000 - (deviceSpeed * 500));
+      const start = Date.now();
+      
+      const interval = setInterval(() => {
+        progress += 100 / (loadTime / 100);
+        bar.style.width = Math.min(progress, 100) + '%';
+        
+        if (Date.now() - start > 2000) {
+          skipBtn.classList.add('visible');
+        }
+        
+        if (progress >= 100) {
+          clearInterval(interval);
+          document.getElementById('gameLoading').classList.add('hidden');
+          document.getElementById('gameFrame').src = url;
+        }
+      }, 100);
+      
+      window.currentGameInterval = interval;
+    }
+    
+    function skipGameLoading() {
+      clearInterval(window.currentGameInterval);
+      document.getElementById('gameLoading').classList.add('hidden');
+      const customGame = CUSTOM_GAMES[currentGameId];
+      const url = customGame?.url || `https://question.sdao.me/iframe/${currentGameId}.html`;
+      document.getElementById('gameFrame').src = url;
+    }
+    
+    function closeGame() {
+      document.getElementById('gamePlayer').classList.remove('active');
+      document.getElementById('gameFrame').src = '';
+      clearInterval(window.currentGameInterval);
+    }
+    
+    function reloadGame() {
+      const frame = document.getElementById('gameFrame');
+      frame.src = frame.src;
+    }
+    
+    function fullscreenGame() {
+      const frame = document.getElementById('gameFrame');
+      if (frame.requestFullscreen) frame.requestFullscreen();
+      else if (frame.webkitRequestFullscreen) frame.webkitRequestFullscreen();
+    }
+    
+ 
+    
+    // ========== SETTINGS ==========
+    function setTheme(theme) {
+      document.body.setAttribute('data-theme', theme);
+      localStorage.setItem('theme', theme);
+      document.querySelectorAll('.theme-option').forEach(o => o.classList.remove('active'));
+      document.querySelector(`.theme-option.${theme}`).classList.add('active');
+    }
+    
+    function setCloak(title, icon) {
+      document.title = title;
+      const link = document.querySelector("link[rel='icon']") || document.createElement('link');
+      link.rel = 'icon';
+      link.href = icon.startsWith('http') ? icon : `data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>${icon}</text></svg>`;
+      document.head.appendChild(link);
+      localStorage.setItem('cloak', JSON.stringify({ title, icon }));
+      document.querySelectorAll('.cloak-option').forEach(o => o.classList.remove('active'));
+      event.target.classList.add('active');
+    }
+    
+    function toggleAnimations() {
+      const toggle = document.getElementById('animationsToggle');
+      toggle.classList.toggle('active');
+      localStorage.setItem('animations', toggle.classList.contains('active'));
+    }
+    
+    function toggleEffects() {
+      const toggle = document.getElementById('effectsToggle');
+      toggle.classList.toggle('active');
+      localStorage.setItem('effects', toggle.classList.contains('active'));
+    }
+    
+// ========== ADMIN PANEL ==========
+document.addEventListener('keydown', e => {
+  if (e.ctrlKey && e.altKey && e.key === '5') {
+    e.preventDefault();
+
+    // Check your Firebase variable for shutdown status
+    // Example: assume you have siteStatus from Firebase like { shutdown: true/false }
+    if (window.siteStatus?.shutdown) {
+      // Website is shutdown → show admin panel immediately
+      document.getElementById('adminPasswordModal').classList.remove('hidden');
+    } else {
+      // Website is up → normal admin behavior
+      if (adminTriggerActive) { // keep your existing trigger
+        document.getElementById('adminPasswordModal').classList.remove('hidden');
+      }
+      // Add other "website up" admin logic here if needed
+    }
+  }
+});
+
+
+// Admin password verification
+function verifyAdminPassword() {
+  const input = document.getElementById('adminPasswordInput');
+  const error = document.getElementById('adminError');
+
+  if (input.value === ADMIN_PASSWORD) {
+    document.getElementById('adminPasswordModal').classList.add('hidden');
+    document.getElementById('adminPanel').classList.add('active');
+    input.value = '';
+    loadAdminData();
+  } else {
+    error.textContent = 'Invalid password';
+  }
+}
+
+// Load all admin data from Firebase
+function loadAdminData() {
+  database.ref('config').once('value', snap => {
+    const config = snap.val() || {};
+
+    // Announcements
+    document.getElementById('adminAnnouncement').value = config.announcement || '';
+
+    // Shutdown
+    document.getElementById('shutdownMessage').value = config.shutdownMessage || '';
+    document.getElementById('shutdownReason').value = config.shutdownReason || '';
+    if (config.shutdown) document.getElementById('shutdownToggle').classList.add('active');
+
+    // Chat settings
+    document.getElementById('chatEnabledToggle').checked = config.chatEnabled ?? true;
+    document.getElementById('chatLockMessageInput').value = config.chatLockMessage || 'Global chat is temporarily disabled.';
+    document.getElementById('mutedUsersInput').value = (config.mutedUsers || []).join(',');
+  });
+}
+
+// Close admin panel
+function closeAdmin() {
+  document.getElementById('adminPanel').classList.remove('active');
+}
+
+// ===== ANNOUNCEMENTS =====
+function publishAnnouncement() {
+  const text = document.getElementById('adminAnnouncement').value.trim();
+  database.ref('config/announcement').set(text);
+  alert('Announcement published!');
+}
+
+function clearAnnouncement() {
+  database.ref('config/announcement').set('');
+  document.getElementById('adminAnnouncement').value = '';
+  alert('Announcement cleared!');
+}
+
+// ===== SHUTDOWN =====
+function toggleShutdown() {
+  document.getElementById('shutdownToggle').classList.toggle('active');
+}
+
+function saveShutdownSettings() {
+  const shutdown = document.getElementById('shutdownToggle').classList.contains('active');
+  const message = document.getElementById('shutdownMessage').value.trim();
+  const reason = document.getElementById('shutdownReason').value.trim();
+
+  database.ref('config').update({ shutdown, shutdownMessage: message, shutdownReason: reason });
+  alert('Shutdown settings saved!');
+}
+
+// ===== REMOVE GAMES =====
+function removeGames() {
+  const ids = document.getElementById('removeGameIds').value
+    .split(',')
+    .map(s => parseInt(s.trim()))
+    .filter(n => !isNaN(n));
+
+  const games = {};
+  ids.forEach(id => { games[id] = false; });
+  database.ref('config/games').update(games);
+  alert('Games removed!');
+}
+
+// ===== CHAT SETTINGS =====
+function saveChatSettings() {
+  const chatEnabled = document.getElementById('chatEnabledToggle').checked;
+  const chatLockMessage = document.getElementById('chatLockMessageInput').value.trim();
+  const mutedUsers = document.getElementById('mutedUsersInput').value
+    .split(',')
+    .map(u => u.trim())
+    .filter(u => u.length > 0);
+
+  database.ref('config').update({
+    chatEnabled,
+    chatLockMessage,
+    mutedUsers
+  });
+
+  alert('Chat settings saved!');
+}
+
+// ===== CHAT USAGE HELPER =====
+function canSendMessage(username) {
+  // Assuming global config is cached in window.config
+  const chatConfig = window.config || {};
+  const chatEnabled = chatConfig.chatEnabled ?? true;
+  const chatLockMessage = chatConfig.chatLockMessage || 'Global chat is temporarily disabled.';
+  const mutedUsers = chatConfig.mutedUsers || [];
+
+  if (!chatEnabled) {
+    alert(chatLockMessage);
+    return false;
+  }
+
+  if (mutedUsers.includes(username)) {
+    alert('You are banned from global chat.');
+    return false;
+  }
+
+  return true;
+}
+
+    
+    // ========== INIT ==========
+    window.onload = () => {
+      startLoading();
+      
+      // Load saved settings
+      const savedTheme = localStorage.getItem('theme') || 'dark';
+      setTheme(savedTheme);
+      
+      const savedCloak = JSON.parse(localStorage.getItem('cloak') || 'null');
+      if (savedCloak) {
+        document.title = savedCloak.title;
+        const link = document.querySelector("link[rel='icon']") || document.createElement('link');
+        link.rel = 'icon';
+        link.href = savedCloak.icon.startsWith('http') ? savedCloak.icon : `data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>${savedCloak.icon}</text></svg>`;
+        document.head.appendChild(link);
+      }
+    };
+  </script>
+
+</body></html>
