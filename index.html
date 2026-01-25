@@ -1739,9 +1739,65 @@
             panel.classList.toggle('visible');
         }
 
-        async function signInWithGoogle() {
-            // Placeholder: real Google sign-in requires OAuth client setup.
-            // Here we simulate by asking the user for a name/email.
+        function decodeJwtResponse(token) {
+            try {
+                const base64Url = token.split('\.')[1];
+                const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+                const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+                    return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+                }).join(''));
+                return JSON.parse(jsonPayload);
+            } catch (e) {
+                console.warn('decodeJwtResponse failed', e);
+                return null;
+            }
+        }
+
+        function handleCredentialResponse(response) {
+            try {
+                const payload = decodeJwtResponse(response.credential);
+                if (!payload) throw new Error('Invalid token payload');
+                window._neonix_profile = window._neonix_profile || {};
+                window._neonix_profile.signedIn = true;
+                window._neonix_profile.email = payload.email || '';
+                // Use name from payload unless user already has a custom name
+                if (!window._neonix_profile.name || window._neonix_profile.name === 'Guest') {
+                    window._neonix_profile.name = payload.name || (payload.email ? payload.email.split('@')[0] : 'User');
+                    window._neonix_profile.lastNameChange = Date.now();
+                }
+                window._neonix_profile.avatar = payload.picture || window._neonix_profile.avatar || DEFAULT_AVATAR;
+                saveProfile();
+                renderProfileUI();
+                applyTabCloak(window._neonix_profile.name, window._neonix_profile.avatar);
+            } catch (e) {
+                console.warn('handleCredentialResponse error', e);
+            }
+        }
+
+        function initializeGoogleIdentity() {
+            try {
+                if (window.google && google.accounts && google.accounts.id) {
+                    google.accounts.id.initialize({
+                        client_id: '127008606660-n9opcdf867at13ieec30p7ch65mptu8e.apps.googleusercontent.com',
+                        callback: handleCredentialResponse
+                    });
+                }
+            } catch (e) { console.warn('initializeGoogleIdentity error', e); }
+        }
+
+        function signInWithGoogle() {
+            // Prefer Google Identity Services if available
+            if (window.google && google.accounts && google.accounts.id) {
+                try {
+                    // Show the One Tap / Account chooser
+                    google.accounts.id.prompt();
+                    return;
+                } catch (e) {
+                    console.warn('google prompt failed', e);
+                }
+            }
+
+            // Fallback to simulated prompt if GIS not available
             try {
                 const email = prompt('Enter your Google email (simulation):');
                 if (!email) return;
@@ -1749,7 +1805,6 @@
                 window._neonix_profile = window._neonix_profile || {};
                 window._neonix_profile.signedIn = true;
                 window._neonix_profile.email = email;
-                // Only set name if not present
                 if (!window._neonix_profile.name || window._neonix_profile.name === 'Guest') {
                     window._neonix_profile.name = name;
                     window._neonix_profile.lastNameChange = Date.now();
@@ -1759,6 +1814,9 @@
                 applyTabCloak(window._neonix_profile.name || '', window._neonix_profile.avatar || '');
             } catch (e) { console.warn('signIn error', e); }
         }
+
+        // Try to initialize Google Identity when the script has loaded
+        window.addEventListener('load', () => setTimeout(initializeGoogleIdentity, 500));
 
         function signOut() {
             try {
