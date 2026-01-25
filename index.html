@@ -1732,6 +1732,9 @@
             const usernameInput = document.getElementById('username-input'); if (usernameInput) usernameInput.value = p.name || '';
             // Show/hide sign out depending on signedIn
             const signout = document.getElementById('signout-btn'); if (signout) signout.style.display = p.signedIn ? 'inline-block' : 'none';
+            // Hide Google sign-in UI when signed in
+            const gsiContainer = document.getElementById('gsi-button'); if (gsiContainer) gsiContainer.style.display = p.signedIn ? 'none' : '';
+            const fallbackBtn = document.getElementById('google-signin'); if (fallbackBtn) fallbackBtn.style.display = p.signedIn ? 'none' : '';
         }
 
         function toggleProfilePanel() {
@@ -1857,6 +1860,8 @@
             saveProfile();
             renderProfileUI();
             applyTabCloak(window._neonix_profile.name, window._neonix_profile.avatar);
+            // Close profile panel after saving
+            const panel = document.getElementById('profile-panel'); if (panel) panel.classList.remove('visible');
         }
 
         function handleAvatarFile(file) {
