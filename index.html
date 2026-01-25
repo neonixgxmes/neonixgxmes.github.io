@@ -1731,7 +1731,10 @@
         // ========================
         function showAnnouncement() {
             try {
-                if (localStorage.getItem('neonix-announcement-dismissed')) return;
+                // If user already claimed the OG badge, no need to show again
+                if (localStorage.getItem('neonix-announcement-claimed')) return;
+                // Allow showing announcement even if it was previously dismissed,
+                // so users who dismissed before can still claim the OG badge.
                 const el = document.getElementById('announcement');
                 if (!el) return;
                 el.style.display = 'flex';
