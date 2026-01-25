@@ -592,6 +592,34 @@
             background: rgba(0, 0, 0, 0.9);
             transform: scale(1.05);
         }
+
+        /* --- ANNOUNCEMENT --- */
+        #announcement {
+            position: fixed;
+            top: 20%;
+            left: 50%;
+            transform: translateX(-50%) translateY(-20px) scale(0.98);
+            background: linear-gradient(180deg, rgba(0,0,0,0.9), rgba(0,0,0,0.85));
+            border: 2px solid var(--neon-glow);
+            color: #fff;
+            padding: 18px 20px;
+            border-radius: 12px;
+            z-index: 3000;
+            min-width: 320px;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.7);
+            transition: transform 0.35s ease, opacity 0.35s ease;
+        }
+        #announcement.visible { display:flex; transform: translateX(-50%) translateY(0) scale(1); }
+        #announcement .announcement-content { text-align: center; width: 100%; }
+        #announcement h2 { margin: 0 0 8px 0; font-size: 18px; color: var(--neon-glow); }
+        #announcement p { margin: 0 0 12px 0; font-size: 13px; color: rgba(255,255,255,0.9); }
+        #announcement .announcement-close {
+            position: absolute; top: 8px; right: 10px; background: transparent; border: none; color: #fff; font-size: 14px; cursor: pointer;
+        }
+        #announcement .claim-btn { margin-top: 6px; }
     </style>
 </head>
 <body>
@@ -746,6 +774,16 @@
     <div id="holiday-bubble">
         <span id="holiday-emoji">🎉</span>
         <span id="holiday-text">Happy Day!</span>
+    </div>
+
+    <!-- SITE ANNOUNCEMENT -->
+    <div id="announcement" role="dialog" aria-modal="true" aria-labelledby="announcement-title">
+        <div class="announcement-content">
+            <button class="announcement-close" aria-label="Close announcement" onclick="closeAnnouncement()">✕</button>
+            <h2 id="announcement-title">V1 IS HERE!!!</h2>
+            <p>Thanks for being part of the journey — claim your OG spot now.</p>
+            <button id="claim-og-btn" class="settings-button claim-btn">claim ur og spot</button>
+        </div>
     </div>
 
     <nav class="top-nav">
@@ -1546,6 +1584,51 @@
                 particlesCanvas.height = window.innerHeight;
             }
         };
+
+        // ========================
+        // ANNOUNCEMENT HANDLERS
+        // ========================
+        function showAnnouncement() {
+            try {
+                if (localStorage.getItem('neonix-announcement-dismissed')) return;
+                const el = document.getElementById('announcement');
+                if (!el) return;
+                el.style.display = 'flex';
+                setTimeout(() => el.classList.add('visible'), 20);
+            } catch (e) { console.warn('showAnnouncement error', e); }
+        }
+
+        function closeAnnouncement() {
+            try {
+                const el = document.getElementById('announcement');
+                if (!el) return;
+                el.classList.remove('visible');
+                setTimeout(() => el.style.display = 'none', 300);
+                localStorage.setItem('neonix-announcement-dismissed', '1');
+            } catch (e) { console.warn('closeAnnouncement error', e); }
+        }
+
+        (function attachClaimHandler(){
+            const btn = document.getElementById('claim-og-btn');
+            if (!btn) return;
+            btn.addEventListener('click', () => {
+                try {
+                    const input = document.getElementById('cloak-title-input');
+                    if (input) {
+                        const trimmed = (input.value || '').trim();
+                        const base = trimmed.replace(/^\(og\)\s*/i, '');
+                        input.value = `(og) ${base || "Neonix's Notes"}`;
+                        settings.cloakTitle = input.value;
+                        localStorage.setItem('neonix-settings', JSON.stringify(settings));
+                        applyTabCloak(settings.cloakTitle, settings.cloakIcon);
+                    }
+                } catch (e) { console.warn('claim-og error', e); }
+                closeAnnouncement();
+            });
+        })();
+
+        // Show announcement shortly after load
+        window.addEventListener('load', () => setTimeout(showAnnouncement, 1200));
 
         setInterval(updateDateTime, 1000);
         setInterval(initWeather, 600000);
