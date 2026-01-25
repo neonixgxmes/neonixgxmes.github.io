@@ -1030,6 +1030,28 @@
             #settings-panel { right: 20px; top: auto; bottom: 20px; width: calc(100% - 40px); }
             #profile-panel { right: 20px; top: auto; bottom: 420px; width: calc(100% - 40px); }
         }
+
+        /* Online users pill */
+        #online-count {
+            position: fixed;
+            top: 26px;
+            right: 90px;
+            background: linear-gradient(180deg, rgba(10,10,20,0.9), rgba(6,6,12,0.8));
+            border: 1px solid rgba(255,255,255,0.04);
+            padding: 8px 12px;
+            border-radius: 18px;
+            font-size: 13px;
+            color: rgba(255,255,255,0.95);
+            z-index: 2100;
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.5);
+        }
+
+        @media (max-width: 900px) {
+            #online-count { right: 110px; top: 90px; }
+        }
     </style>
 
     <script>
@@ -1773,6 +1795,57 @@
 
         // Show announcement shortly after load
         window.addEventListener('load', () => setTimeout(showAnnouncement, 1200));
+
+        // ========================
+        // ONLINE USERS COUNTER (local/tab-based approximate)
+        // ========================
+        (function initOnlineCounter(){
+            const KEY = 'neonix-online-sessions';
+            const now = () => Date.now();
+            const ttl = 20000; // 20s window for active sessions
+            const id = `${Date.now()}-${Math.floor(Math.random()*100000)}`;
+            const numberEl = document.getElementById('online-number');
+
+            function readSessions(){
+                try { return JSON.parse(localStorage.getItem(KEY) || '{}'); } catch(e){ return {}; }
+            }
+
+            function writeSessions(obj){
+                try { localStorage.setItem(KEY, JSON.stringify(obj)); } catch(e){}
+            }
+
+            function heartbeat(){
+                const sessions = readSessions();
+                sessions[id] = now();
+                const cutoff = now() - ttl;
+                // remove stale
+                Object.keys(sessions).forEach(k => { if (sessions[k] < cutoff) delete sessions[k]; });
+                writeSessions(sessions);
+                updateUI(Object.keys(sessions).length);
+            }
+
+            function updateUI(count){ if (numberEl) numberEl.innerText = count; }
+
+            // Listen for storage events (other tabs)
+            window.addEventListener('storage', (e) => {
+                if (e.key === KEY) {
+                    try { const s = JSON.parse(e.newValue || '{}'); updateUI(Object.keys(s).length); } catch(e){}
+                }
+            });
+
+            // Start heartbeat and cleanup interval
+            heartbeat();
+            const hbInterval = setInterval(heartbeat, 4000);
+
+            // Remove on unload
+            window.addEventListener('beforeunload', () => {
+                try {
+                    const sessions = readSessions();
+                    delete sessions[id];
+                    writeSessions(sessions);
+                } catch(e){}
+            });
+        })();
 
         // ========================
         // PROFILE HANDLERS
