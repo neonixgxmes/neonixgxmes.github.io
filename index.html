@@ -833,7 +833,8 @@
         </div>
 
         <div class="row">
-            <button id="google-signin" class="settings-button">Sign in with Google</button>
+            <div id="gsi-button"></div>
+            <button id="google-signin" class="settings-button" style="display:none;">Sign in (fallback)</button>
             <button id="signout-btn" class="settings-button secondary">Sign out</button>
         </div>
 
@@ -1781,6 +1782,11 @@
                         client_id: '127008606660-n9opcdf867at13ieec30p7ch65mptu8e.apps.googleusercontent.com',
                         callback: handleCredentialResponse
                     });
+                    // Render the official Google Sign-In button into the profile panel
+                    const gsiContainer = document.getElementById('gsi-button');
+                    if (gsiContainer) {
+                        google.accounts.id.renderButton(gsiContainer, { theme: 'outline', size: 'medium', width: 220 });
+                    }
                 }
             } catch (e) { console.warn('initializeGoogleIdentity error', e); }
         }
