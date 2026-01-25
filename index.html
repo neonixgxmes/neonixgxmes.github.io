@@ -754,10 +754,10 @@
             <div class="nav-label">Home</div>
         </div>
         
-        <a href="Games/games.html" target="_blank" rel="noopener noreferrer" class="nav-item">
+        <div class="nav-item" onclick="openGames(this)">
             <img src="https://gcdnb.pbrd.co/images/64YwQJN3Mlw0.png?o=1" alt="Games">
             <div class="nav-label">Games</div>
-        </a>
+        </div>
         
         <div class="nav-item folder-item">
             <img src="https://gcdnb.pbrd.co/images/klrIPWiuxLFX.png?o=1" class="folder-icon" alt="Folder">
@@ -833,7 +833,9 @@
         </div>
     </section>
 
-    <!-- Games page is opened in a separate tab -->
+    <section id="games" class="page-section">
+        <iframe id="games-frame" src="" style="width:100%; height:100%; border:none;" title="Games"></iframe>
+    </section>
 
     <section id="partners" class="page-section">
         <div style="text-align:center;">
@@ -1147,10 +1149,6 @@
                 fetchWeather(52.52, 13.41);
             }
         }
-
-        // ========================
-        // HOLIDAY THEME SYSTEM
-        // ========================
         function applyHolidayTheme() {
             if (!settings.holidayThemes) return;
             
@@ -1178,10 +1176,6 @@
                 setTimeout(() => bubble.style.display = 'flex', 2000);
             }
         }
-
-        // ========================
-        // SAVE/LOAD SETTINGS
-        // ========================
         function saveSettings() {
             settings.theme = document.getElementById('theme-select').value;
             settings.animations = document.getElementById('animations-select').value;
@@ -1240,7 +1234,6 @@
         }
 
         function resetSettings() {
-            // Reset in-memory settings to defaults, persist, apply and close panel
             settings = JSON.parse(JSON.stringify(defaultSettings));
             localStorage.setItem('neonix-settings', JSON.stringify(settings));
             // Update UI controls and apply the defaults
@@ -1496,6 +1489,39 @@
                 iframe.style.height = '100%';
                 iframe.src = url;
                 win.document.body.appendChild(iframe);
+            }
+        }
+
+        let _gamesHtmlCache = null;
+        async function openGames(element) {
+            const iframe = document.getElementById('games-frame');
+            const url = 'https://cdn.jsdelivr.net/gh/neonixgxmes/neonixgxmes.github.io@master/Games/games.html';
+
+            if (!iframe) return;
+
+            // Show games section immediately and display a loading placeholder
+            showSection('games', element);
+            iframe.srcdoc = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#fff;background:#000">Loading games…</div>';
+
+            try {
+                // Use cached HTML if available
+                let html = _gamesHtmlCache;
+                if (!html) {
+                    const res = await fetch(url);
+                    if (!res.ok) throw new Error('Network response was not ok');
+                    html = await res.text();
+                    _gamesHtmlCache = html;
+                }
+
+                // Ensure relative URLs inside the fetched HTML resolve correctly by adding a base tag
+                const baseHref = 'https://cdn.jsdelivr.net/gh/neonixgxmes/neonixgxmes.github.io@master/Games/';
+                const wrapped = `<base href="${baseHref}">` + html;
+
+                // Inject into iframe using srcdoc so we don't navigate away or open a new tab
+                iframe.srcdoc = wrapped;
+            } catch (err) {
+                console.error('Failed to load Games HTML:', err);
+                iframe.srcdoc = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#fff;background:#000;padding:20px;text-align:center">Failed to load games. Please try again later.</div>';
             }
         }
 
