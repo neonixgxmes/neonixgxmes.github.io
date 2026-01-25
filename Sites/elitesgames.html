@@ -1,0 +1,1347 @@
+<!doctype html>
+<html>
+
+<head></head>
+
+<body>
+	<!DOCTYPE html>
+	<html lang="en">
+
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width,initial-scale=1" />
+		<title></title>
+		<style>
+			:root {
+				--bg: #0b0b0b;
+				--header-bg: #111;
+				--text: #ffffff;
+				--muted: #cccccc;
+				--accent: #ff6600;
+				--accent-dark: #ff3300;
+				--accent-shadow: rgba(255, 102, 0, 0.2);
+				--card-bg: #000000;
+				--card-radius: 10px;
+				--card-shadow: 0 0 10px rgba(255, 102, 0, 0.2);
+				--glow-size: 15px;
+				--glow-strength: 0.25;
+				--font-family: Arial, Helvetica, sans-serif;
+				--snow-color: rgba(255, 255, 255, 0.95);
+				--snow-count: 150;
+				--snow-size: 3;
+				--snow-speed: 1.2;
+			}
+
+			body {
+				margin: 0;
+				font-family: var(--font-family);
+				background: var(--bg);
+				color: var(--text);
+			}
+
+			#snowCanvas {
+				position: fixed;
+				top: 0;
+				left: 0;
+				width: 100%;
+				height: 100%;
+				pointer-events: none;
+				z-index: -1;
+				mix-blend-mode: screen;
+			}
+
+			header {
+				position: fixed;
+				top: 20px;
+				left: 50%;
+				transform: translateX(-50%);
+				width: calc(100% - 40px);
+				background: var(--header-bg);
+				padding: 1rem;
+				display: flex;
+				align-items: center;
+				gap: 0.8rem;
+				z-index: 100;
+				box-shadow: 0 0 20px var(--accent-shadow);
+				border-radius: 12px;
+			}
+
+			header h1 {
+				margin: 0;
+				color: var(--accent);
+				flex-shrink: 0;
+			}
+
+			header input {
+				flex: 1;
+				padding: 0.6rem 0.9rem;
+				border-radius: 25px;
+				border: none;
+				outline: none;
+				background: rgba(255, 255, 255, 0.03);
+				color: var(--text);
+			}
+
+			header button {
+				background: var(--accent);
+				border: none;
+				border-radius: 8px;
+				padding: 0.6rem 1rem;
+				color: #fff;
+				cursor: pointer;
+				font-weight: bold;
+			}
+
+			#discordBtn {
+				background: #7289da;
+			}
+
+			#discordBtn:hover {
+				background: #5b6eae;
+			}
+
+			#customizeBtn {
+				background: transparent;
+				border: 2px solid rgba(255, 255, 255, 0.06);
+				color: var(--text);
+				padding: 0.5rem;
+				border-radius: 8px;
+			}
+
+			#gameInfo {
+				padding: 8rem 2rem 0.5rem 2rem;
+				color: var(--accent);
+				font-weight: bold;
+				font-size: 1rem;
+			}
+
+			#gameInfo p {
+				margin: 0;
+			}
+
+			#gameContainer {
+				padding: 0 2rem 2rem 2rem;
+				display: grid;
+				grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+				gap: 0.8rem;
+				justify-content: center;
+			}
+
+			.game-card {
+				background: var(--card-bg);
+				border-radius: var(--card-radius);
+				padding: 1rem;
+				text-align: center;
+				box-shadow: var(--card-shadow);
+				transition: 0.2s;
+				display: flex;
+				flex-direction: column;
+				align-items: center;
+				width: 100%;
+				max-width: 250px;
+				box-sizing: border-box;
+			}
+
+			.game-card:hover {
+				transform: scale(1.05);
+				box-shadow: 0 0 calc(var(--glow-size)) rgba(255, 102, 0, var(--glow-strength));
+			}
+
+			.game-card img {
+				width: 100%;
+				height: 140px;
+				object-fit: cover;
+				border-radius: 8px;
+				margin-bottom: 0.5rem;
+				cursor: pointer;
+			}
+
+			.game-card h2 {
+				margin: 0.5rem 0 0;
+				font-size: 1.1rem;
+				text-align: center;
+			}
+
+			.game-card p {
+				font-size: 0.9rem;
+				color: var(--muted);
+				text-align: center;
+				margin-top: 0.3rem;
+			}
+
+			.modal {
+				display: none;
+				position: fixed;
+				top: 0;
+				left: 0;
+				width: 100vw;
+				height: 100vh;
+				background: rgba(0, 0, 0, 0.95);
+				justify-content: center;
+				align-items: center;
+				z-index: 999;
+				overflow: auto;
+			}
+
+			.modal-content {
+				background: var(--card-bg);
+				max-width: 90vw;
+				width: 900px;
+				border-radius: 12px;
+				padding: 1rem 1.5rem;
+				display: flex;
+				flex-direction: column;
+				align-items: center;
+				position: relative;
+				box-shadow: 0 0 25px var(--accent-shadow);
+				text-align: center;
+			}
+
+			#gameTitle {
+				margin: 0 0 1rem;
+				color: var(--accent);
+				font-size: 1.5rem;
+			}
+
+			#gameFrame {
+				width: 100%;
+				height: 60vh;
+				border: 2px solid var(--accent);
+				border-radius: 8px;
+				margin-bottom: 1rem;
+			}
+
+			.controls {
+				display: flex;
+				gap: 1rem;
+				flex-wrap: wrap;
+				justify-content: center;
+				margin-bottom: 1rem;
+			}
+
+			.controls button {
+				background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+				border: none;
+				border-radius: 6px;
+				color: #fff;
+				padding: 0.8rem 1.2rem;
+				font-weight: bold;
+				cursor: pointer;
+				transition: 0.2s;
+			}
+
+			.controls button:hover {
+				transform: scale(1.05);
+				box-shadow: 0 0 15px var(--accent-shadow);
+			}
+
+			.modal-content button#closeModal {
+				position: absolute;
+				top: 15px;
+				right: 15px;
+				background: var(--accent);
+				border: none;
+				border-radius: 50%;
+				color: #fff;
+				width: 40px;
+				height: 40px;
+				font-size: 1.5rem;
+				font-weight: bold;
+				line-height: 1;
+				cursor: pointer;
+				z-index: 1000;
+				transition: background 0.2s, transform 0.2s;
+			}
+
+			.modal-content button#closeModal:hover {
+				background: var(--accent-dark);
+				transform: scale(1.1);
+			}
+
+			.settings-panel-large {
+				display: none;
+				position: fixed;
+				top: 64px;
+				right: 24px;
+				width: 920px;
+				max-width: calc(100% - 48px);
+				background: var(--card-bg);
+				color: var(--text);
+				border-radius: 12px;
+				box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+				z-index: 1200;
+				padding: 14px;
+				font-size: 14px;
+				overflow: hidden;
+			}
+
+			.settings-header {
+				display: flex;
+				align-items: center;
+				justify-content: space-between;
+				gap: 12px;
+				margin-bottom: 10px;
+				cursor: move;
+			}
+
+			.settings-title {
+				font-size: 18px;
+				color: var(--accent);
+				margin: 0;
+				font-weight: 700;
+			}
+
+			.settings-close {
+				background: transparent;
+				border: 1px solid rgba(255, 255, 255, 0.06);
+				padding: 6px 10px;
+				border-radius: 8px;
+				color: var(--text);
+				cursor: pointer;
+			}
+
+			.settings-body {
+				max-height: 62vh;
+				overflow: auto;
+				padding-right: 8px;
+			}
+
+			.section {
+				margin-bottom: 12px;
+			}
+
+			.section h4 {
+				margin: 0 0 6px 0;
+				color: var(--muted);
+				font-size: 13px;
+			}
+
+			.row {
+				display: flex;
+				gap: 12px;
+				flex-wrap: wrap;
+			}
+
+			.col {
+				flex: 1;
+				min-width: 180px
+			}
+
+			.label {
+				display: block;
+				margin-bottom: 6px;
+				color: var(--muted);
+				font-size: 13px
+			}
+
+			input[type="color"],
+			input[type="range"],
+			select,
+			input[type="number"] {
+				width: 100%;
+				padding: 8px;
+				border-radius: 8px;
+				border: none;
+				background: rgba(255, 255, 255, 0.02);
+				color: var(--text)
+			}
+
+			.small {
+				width: 120px
+			}
+
+			.actions {
+				display: flex;
+				gap: 8px;
+				justify-content: flex-end;
+				margin-top: 8px
+			}
+
+			.btn-primary {
+				background: var(--accent);
+				border: none;
+				color: #fff;
+				padding: 8px 12px;
+				border-radius: 8px;
+				cursor: pointer
+			}
+
+			.btn-ghost {
+				background: transparent;
+				border: 1px solid rgba(255, 255, 255, 0.06);
+				color: var(--text);
+				padding: 8px 12px;
+				border-radius: 8px;
+				cursor: pointer
+			}
+
+			@media (max-width:980px) {
+				.settings-panel-large {
+					left: 12px;
+					right: 12px;
+					top: 72px;
+					width: calc(100% - 24px)
+				}
+			}
+		</style>
+	</head>
+
+	<body>
+
+		<canvas id="snowCanvas"></canvas>
+
+		<header>
+			<h1>Elite Gamez</h1>
+			<input type="text" id="searchInput" placeholder="Search games...">
+			<button id="discordBtn">
+			<button id="customizeBtn">Customize</button>
+		</header>
+
+		<div id="gameInfo">
+			<p>Games: 0</p>
+		</div>
+		<div id="gameContainer"></div>
+
+		<div class="modal" id="gameModal">
+			<div class="modal-content">
+				<button id="closeModal">&times;</button>
+				<h2 id="gameTitle"></h2>
+				<iframe id="gameFrame" src="" frameborder="0"></iframe>
+				<div class="controls">
+					<button id="downloadBtn">Download</button>
+					<button id="fullscreenBtn">Fullscreen</button>
+					<button id="aboutBlankBtn">Open in About:blank</button>
+					<button id="blobBtn">Open in Blob URL</button>
+				</div>
+			</div>
+		</div>
+
+		<div class="settings-panel-large" id="settingsPanel" role="dialog" aria-label="Site customization">
+			<div class="settings-header" id="settingsDrag">
+				<div style="display:flex;gap:12px;align-items:center">
+					<span class="settings-title">Site Customization</span>
+					<small style="color:var(--muted)">(drag header to move)</small>
+				</div>
+				<div></div>
+			</div>
+
+			<div class="settings-body">
+				<div class="section">
+					<h4>Presets & Quick Actions</h4>
+					<div class="row">
+						<div class="col" style="display:flex;gap:8px;flex-wrap:wrap">
+							<button class="btn-primary" data-preset="Inferno">Inferno</button>
+							<button class="btn-primary" data-preset="mathias">mathias</button>
+							<button class="btn-primary" data-preset="kirby">kirby</button>
+							<button class="btn-primary" data-preset="Ocean">Ocean</button>
+							<button class="btn-primary" data-preset="Neon">Neon</button>
+							<button class="btn-primary" data-preset="Retro">Retro</button>
+							<button class="btn-ghost" data-preset="Dark">Dark</button>
+							<button class="btn-ghost" data-preset="Light">Light</button>
+						</div>
+						<div class="col" style="display:flex;justify-content:flex-end;align-items:center">
+							<button class="btn-primary" id="exportBtn">Export JSON</button>
+							<button class="btn-ghost" id="importBtn">Import JSON</button>
+							<input type="file" id="importFile" accept=".json" style="display:none" />
+							<button class="btn-ghost" id="resetBtn">Reset Defaults</button>
+						</div>
+					</div>
+				</div>
+
+				<div class="section">
+					<h4>Colors & Typography</h4>
+					<div class="row">
+						<div class="col">
+							<label class="label">Background color</label>
+							<input id="bgColor" type="color" value="#0b0b0b">
+				</div>
+							<div class="col">
+								<label class="label">Header color</label>
+								<input id="headerColor" type="color" value="#111111">
+				</div>
+								<div class="col">
+									<label class="label">Text color</label>
+									<input id="textColor" type="color" value="#ffffff">
+				</div>
+									<div class="col">
+										<label class="label">Muted / Secondary text</label>
+										<input id="mutedColor" type="color" value="#cccccc">
+				</div>
+									</div>
+
+									<div class="row" style="margin-top:10px">
+										<div class="col">
+											<label class="label">Accent color</label>
+											<input id="accentColor" type="color" value="#ff6600">
+				</div>
+											<div class="col">
+												<label class="label">Accent dark</label>
+												<input id="accentDark" type="color" value="#ff3300">
+				</div>
+												<div class="col">
+													<label class="label">Glow (shadow) color</label>
+													<input id="glowColor" type="color" value="#ff6600">
+				</div>
+													<div class="col">
+														<label class="label">Card background</label>
+														<input id="cardBg" type="color" value="#000000">
+				</div>
+													</div>
+
+													<div class="row" style="margin-top:10px">
+														<div class="col">
+															<label class="label">Font family</label>
+															<select id="fontFamily">
+						<option value="Arial, Helvetica, sans-serif">System - Arial</option>
+						<option value="'Segoe UI', Tahoma, Geneva, Verdana, sans-serif">Segoe UI</option>
+						<option value="'Roboto', Arial, sans-serif">Roboto</option>
+						<option value="'VT323', monospace">VT323 (gamey)</option>
+						<option value="'Press Start 2P', cursive">Press Start (pixel)</option>
+					</select>
+														</div>
+														<div class="col">
+															<label class="label">Card radius (px)</label>
+															<input id="cardRadius" type="range" min="0" max="40" value="10">
+				</div>
+															<div class="col">
+																<label class="label">Glow size (px)</label>
+																<input id="glowSize" type="range" min="4" max="60" value="15">
+				</div>
+																<div class="col">
+																	<label class="label">Glow strength (0-1)</label>
+																	<input id="glowStrength" type="range" min="0" max="1" step="0.01" value="0.25">
+				</div>
+																</div>
+															</div>
+
+															<div class="section">
+																<h4>Snow & Particles</h4>
+																<div class="row">
+																	<div class="col">
+																		<label class="label">Snow color</label>
+																		<input id="snowColor" type="color" value="#ffffff">
+				</div>
+																		<div class="col">
+																			<label class="label">Snow count: <span id="snowCountLabel">150</span></label>
+																			<input id="snowCount" type="range" min="0" max="400" value="150">
+				</div>
+																			<div class="col">
+																				<label class="label">Snow size: <span id="snowSizeLabel">3</span></label>
+																				<input id="snowSize" type="range" min="1" max="10" value="3">
+				</div>
+																				<div class="col">
+																					<label class="label">Snow speed: <span id="snowSpeedLabel">1.2</span></label>
+																					<input id="snowSpeed" type="range" min="0.2" max="4" step="0.1" value="1.2">
+				</div>
+																				</div>
+																			</div>
+																		</div>
+
+																		<div class="actions">
+																			<button class="btn-ghost" id="applyBtn">Apply (autosaves)</button>
+																			<button class="btn-primary" id="saveBtn">Save</button>
+																		</div>
+																	</div>
+
+																	<script>
+																		var DEFAULTS = {
+  bg:'#0b0b0b',
+  header:'#111111',
+  text:'#ffffff',
+  muted:'#cccccc',
+  accent:'#ff6600',
+  accentDark:'#ff3300',
+  glowColor:'#ff6600',
+  cardBg:'#000000',
+  cardRadius:10,
+  glowSize:15,
+  glowStrength:0.25,
+  fontFamily:'Arial, Helvetica, sans-serif',
+  snowColor:'#ffffff',
+  snowCount:150,
+  snowSize:3,
+  snowSpeed:1.2
+};
+
+var customizeBtn = document.getElementById('customizeBtn');
+var settingsPanel = document.getElementById('settingsPanel');
+var settingsDrag = document.getElementById('settingsDrag');
+var bgColor = document.getElementById('bgColor');
+var headerColor = document.getElementById('headerColor');
+var textColor = document.getElementById('textColor');
+var mutedColor = document.getElementById('mutedColor');
+var accentColor = document.getElementById('accentColor');
+var accentDark = document.getElementById('accentDark');
+var glowColor = document.getElementById('glowColor');
+var cardBg = document.getElementById('cardBg');
+var cardRadius = document.getElementById('cardRadius');
+var glowSize = document.getElementById('glowSize');
+var glowStrength = document.getElementById('glowStrength');
+var fontFamily = document.getElementById('fontFamily');
+var snowColor = document.getElementById('snowColor');
+var snowCount = document.getElementById('snowCount');
+var snowSize = document.getElementById('snowSize');
+var snowSpeed = document.getElementById('snowSpeed');
+var snowCountLabel = document.getElementById('snowCountLabel');
+var snowSizeLabel = document.getElementById('snowSizeLabel');
+var snowSpeedLabel = document.getElementById('snowSpeedLabel');
+var applyBtn = document.getElementById('applyBtn');
+var saveBtn = document.getElementById('saveBtn');
+var resetBtn = document.getElementById('resetBtn');
+var exportBtn = document.getElementById('exportBtn');
+var importBtn = document.getElementById('importBtn');
+var importFile = document.getElementById('importFile');
+
+function hexToRGBA(hex, alpha){
+  if(!alpha) alpha = 1;
+  if(!hex) return 'rgba(255,255,255,'+alpha+')';
+  var h = hex.replace('#','');
+  var num = parseInt(h,16);
+  var r = (num >> 16) & 255;
+  var g = (num >> 8) & 255;
+  var b = num & 255;
+  return 'rgba('+r+','+g+','+b+','+alpha+')';
+}
+
+function applySettings(s){
+  var settings = {};
+  for(var k in DEFAULTS){
+    settings[k] = DEFAULTS[k];
+  }
+  if(s){
+    for(var k in s){
+      settings[k] = s[k];
+    }
+  }
+  
+  document.documentElement.style.setProperty('--bg', settings.bg);
+  document.documentElement.style.setProperty('--header-bg', settings.header);
+  document.documentElement.style.setProperty('--text', settings.text);
+  document.documentElement.style.setProperty('--muted', settings.muted);
+  document.documentElement.style.setProperty('--accent', settings.accent);
+  document.documentElement.style.setProperty('--accent-dark', settings.accentDark);
+  document.documentElement.style.setProperty('--accent-shadow', hexToRGBA(settings.glowColor,0.3));
+  
+  var cards = document.querySelectorAll('.game-card');
+  for(var i=0; i<cards.length; i++){
+    cards[i].style.boxShadow = '0 0 '+settings.glowSize+'px '+hexToRGBA(settings.glowColor, settings.glowStrength);
+  }
+  
+  document.documentElement.style.setProperty('--card-bg', settings.cardBg);
+  document.documentElement.style.setProperty('--card-radius', settings.cardRadius+'px');
+  document.documentElement.style.setProperty('--card-shadow', '0 0 '+Math.max(6,settings.glowSize/1.6)+'px '+hexToRGBA(settings.glowColor,0.12));
+  document.documentElement.style.setProperty('--glow-size', settings.glowSize+'px');
+  document.documentElement.style.setProperty('--glow-strength', settings.glowStrength);
+  document.documentElement.style.setProperty('--font-family', settings.fontFamily);
+  document.documentElement.style.setProperty('--snow-color', hexToRGBA(settings.snowColor,1));
+  document.documentElement.style.setProperty('--snow-count', settings.snowCount);
+  document.documentElement.style.setProperty('--snow-size', settings.snowSize);
+  document.documentElement.style.setProperty('--snow-speed', settings.snowSpeed);
+
+  document.body.style.background = settings.bg;
+  document.body.style.color = settings.text;
+  var header = document.querySelector('header');
+  if(header){
+    header.style.background = settings.header;
+  }
+  
+  var allCards = document.querySelectorAll('.game-card');
+  for(var i=0; i<allCards.length; i++){
+    allCards[i].style.background = settings.cardBg;
+  }
+  
+  var gf = document.getElementById('gameFrame');
+  if(gf){
+    gf.style.borderColor = settings.accent;
+  }
+}
+
+function saveSettings(obj){
+  localStorage.setItem('elite_gamez_theme_v1', JSON.stringify(obj));
+  saveBtn.textContent = 'Saved ✓';
+  setTimeout(function(){ 
+    saveBtn.textContent = 'Save'; 
+  }, 900);
+}
+
+function loadSettings(){
+  var raw = localStorage.getItem('elite_gamez_theme_v1');
+  if(!raw){
+    return DEFAULTS;
+  }
+  try {
+    var parsed = JSON.parse(raw);
+    var result = {};
+    for(var k in DEFAULTS){
+      result[k] = DEFAULTS[k];
+    }
+    for(var k in parsed){
+      result[k] = parsed[k];
+    }
+    return result;
+  } catch(e){
+    console.error('bad json', e);
+    return DEFAULTS;
+  }
+}
+
+function resetToDefaults(){
+  localStorage.removeItem('elite_gamez_theme_v1');
+  updateUIFromSettings(DEFAULTS);
+  applySettings(DEFAULTS);
+  updateSnow(DEFAULTS.snowCount, DEFAULTS.snowSize, DEFAULTS.snowSpeed, DEFAULTS.snowColor);
+}
+
+function updateUIFromSettings(s){
+  bgColor.value = s.bg;
+  headerColor.value = s.header;
+  textColor.value = s.text;
+  mutedColor.value = s.muted;
+  accentColor.value = s.accent;
+  accentDark.value = s.accentDark;
+  glowColor.value = s.glowColor;
+  cardBg.value = s.cardBg;
+  cardRadius.value = s.cardRadius;
+  glowSize.value = s.glowSize;
+  glowStrength.value = s.glowStrength;
+  fontFamily.value = s.fontFamily;
+  snowColor.value = s.snowColor;
+  snowCount.value = s.snowCount;
+  snowSize.value = s.snowSize;
+  snowSpeed.value = s.snowSpeed;
+  snowCountLabel.textContent = s.snowCount;
+  snowSizeLabel.textContent = s.snowSize;
+  snowSpeedLabel.textContent = s.snowSpeed;
+}
+
+function readSettingsFromUI(){
+  var obj = {
+    bg: bgColor.value,
+    header: headerColor.value,
+    text: textColor.value,
+    muted: mutedColor.value,
+    accent: accentColor.value,
+    accentDark: accentDark.value,
+    glowColor: glowColor.value,
+    cardBg: cardBg.value,
+    cardRadius: Number(cardRadius.value),
+    glowSize: Number(glowSize.value),
+    glowStrength: Number(glowStrength.value),
+    fontFamily: fontFamily.value,
+    snowColor: snowColor.value,
+    snowCount: Number(snowCount.value),
+    snowSize: Number(snowSize.value),
+    snowSpeed: Number(snowSpeed.value)
+  };
+  return obj;
+}
+
+bgColor.addEventListener('input', function(){
+  var s = readSettingsFromUI();
+  applySettings(s);
+  updateSnow(s.snowCount, s.snowSize, s.snowSpeed, s.snowColor);
+  if(window.autosaveTimer){
+    clearTimeout(window.autosaveTimer);
+  }
+  window.autosaveTimer = setTimeout(function(){
+    saveSettings(s);
+  }, 900);
+});
+
+headerColor.addEventListener('input', function(){
+  var s = readSettingsFromUI();
+  applySettings(s);
+  updateSnow(s.snowCount, s.snowSize, s.snowSpeed, s.snowColor);
+  if(window.autosaveTimer){
+    clearTimeout(window.autosaveTimer);
+  }
+  window.autosaveTimer = setTimeout(function(){
+    saveSettings(s);
+  }, 900);
+});
+
+textColor.addEventListener('input', function(){
+  var s = readSettingsFromUI();
+  applySettings(s);
+  updateSnow(s.snowCount, s.snowSize, s.snowSpeed, s.snowColor);
+  if(window.autosaveTimer){
+    clearTimeout(window.autosaveTimer);
+  }
+  window.autosaveTimer = setTimeout(function(){
+    saveSettings(s);
+  }, 900);
+});
+
+mutedColor.addEventListener('input', function(){
+  var s = readSettingsFromUI();
+  applySettings(s);
+  updateSnow(s.snowCount, s.snowSize, s.snowSpeed, s.snowColor);
+  if(window.autosaveTimer){
+    clearTimeout(window.autosaveTimer);
+  }
+  window.autosaveTimer = setTimeout(function(){
+    saveSettings(s);
+  }, 900);
+});
+
+accentColor.addEventListener('input', function(){
+  var s = readSettingsFromUI();
+  applySettings(s);
+  updateSnow(s.snowCount, s.snowSize, s.snowSpeed, s.snowColor);
+  if(window.autosaveTimer){
+    clearTimeout(window.autosaveTimer);
+  }
+  window.autosaveTimer = setTimeout(function(){
+    saveSettings(s);
+  }, 900);
+});
+
+accentDark.addEventListener('input', function(){
+  var s = readSettingsFromUI();
+  applySettings(s);
+  updateSnow(s.snowCount, s.snowSize, s.snowSpeed, s.snowColor);
+  if(window.autosaveTimer){
+    clearTimeout(window.autosaveTimer);
+  }
+  window.autosaveTimer = setTimeout(function(){
+    saveSettings(s);
+  }, 900);
+});
+
+glowColor.addEventListener('input', function(){
+  var s = readSettingsFromUI();
+  applySettings(s);
+  updateSnow(s.snowCount, s.snowSize, s.snowSpeed, s.snowColor);
+  if(window.autosaveTimer){
+    clearTimeout(window.autosaveTimer);
+  }
+  window.autosaveTimer = setTimeout(function(){
+    saveSettings(s);
+  }, 900);
+});
+
+cardBg.addEventListener('input', function(){
+  var s = readSettingsFromUI();
+  applySettings(s);
+  updateSnow(s.snowCount, s.snowSize, s.snowSpeed, s.snowColor);
+  if(window.autosaveTimer){
+    clearTimeout(window.autosaveTimer);
+  }
+  window.autosaveTimer = setTimeout(function(){
+    saveSettings(s);
+  }, 900);
+});
+
+cardRadius.addEventListener('input', function(){
+  var s = readSettingsFromUI();
+  applySettings(s);
+  updateSnow(s.snowCount, s.snowSize, s.snowSpeed, s.snowColor);
+  if(window.autosaveTimer){
+    clearTimeout(window.autosaveTimer);
+  }
+  window.autosaveTimer = setTimeout(function(){
+    saveSettings(s);
+  }, 900);
+});
+
+glowSize.addEventListener('input', function(){
+  var s = readSettingsFromUI();
+  applySettings(s);
+  updateSnow(s.snowCount, s.snowSize, s.snowSpeed, s.snowColor);
+  if(window.autosaveTimer){
+    clearTimeout(window.autosaveTimer);
+  }
+  window.autosaveTimer = setTimeout(function(){
+    saveSettings(s);
+  }, 900);
+});
+
+glowStrength.addEventListener('input', function(){
+  var s = readSettingsFromUI();
+  applySettings(s);
+  updateSnow(s.snowCount, s.snowSize, s.snowSpeed, s.snowColor);
+  if(window.autosaveTimer){
+    clearTimeout(window.autosaveTimer);
+  }
+  window.autosaveTimer = setTimeout(function(){
+    saveSettings(s);
+  }, 900);
+});
+
+fontFamily.addEventListener('input', function(){
+  var s = readSettingsFromUI();
+  applySettings(s);
+  updateSnow(s.snowCount, s.snowSize, s.snowSpeed, s.snowColor);
+  if(window.autosaveTimer){
+    clearTimeout(window.autosaveTimer);
+  }
+  window.autosaveTimer = setTimeout(function(){
+    saveSettings(s);
+  }, 900);
+});
+
+snowColor.addEventListener('input', function(){
+  var s = readSettingsFromUI();
+  applySettings(s);
+  updateSnow(s.snowCount, s.snowSize, s.snowSpeed, s.snowColor);
+  if(window.autosaveTimer){
+    clearTimeout(window.autosaveTimer);
+  }
+  window.autosaveTimer = setTimeout(function(){
+    saveSettings(s);
+  }, 900);
+});
+
+snowCount.addEventListener('input', function(){
+  snowCountLabel.textContent = snowCount.value;
+  var s = readSettingsFromUI();
+  applySettings(s);
+  updateSnow(s.snowCount, s.snowSize, s.snowSpeed, s.snowColor);
+  if(window.autosaveTimer){
+    clearTimeout(window.autosaveTimer);
+  }
+  window.autosaveTimer = setTimeout(function(){
+    saveSettings(s);
+  }, 900);
+});
+
+snowSize.addEventListener('input', function(){
+  snowSizeLabel.textContent = snowSize.value;
+  var s = readSettingsFromUI();
+  applySettings(s);
+  updateSnow(s.snowCount, s.snowSize, s.snowSpeed, s.snowColor);
+  if(window.autosaveTimer){
+    clearTimeout(window.autosaveTimer);
+  }
+  window.autosaveTimer = setTimeout(function(){
+    saveSettings(s);
+  }, 900);
+});
+
+snowSpeed.addEventListener('input', function(){
+  snowSpeedLabel.textContent = snowSpeed.value;
+  var s = readSettingsFromUI();
+  applySettings(s);
+  updateSnow(s.snowCount, s.snowSize, s.snowSpeed, s.snowColor);
+  if(window.autosaveTimer){
+    clearTimeout(window.autosaveTimer);
+  }
+  window.autosaveTimer = setTimeout(function(){
+    saveSettings(s);
+  }, 900);
+});
+
+applyBtn.addEventListener('click', function(){
+  var s = readSettingsFromUI();
+  applySettings(s);
+  updateSnow(s.snowCount, s.snowSize, s.snowSpeed, s.snowColor);
+  saveSettings(s);
+});
+
+saveBtn.addEventListener('click', function(){
+  saveSettings(readSettingsFromUI());
+});
+
+resetBtn.addEventListener('click', function(){
+  if(confirm('like the orange color better? same')){
+    resetToDefaults();
+  }
+});
+
+exportBtn.addEventListener('click', function(){
+  var data = readSettingsFromUI();
+  var json = JSON.stringify(data, null, 2);
+  var blob = new Blob([json], {type:'application/json'});
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url;
+  a.download = 'theme.json';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+});
+
+importBtn.addEventListener('click', function(){
+  importFile.click();
+});
+
+importFile.addEventListener('change', function(e){
+  var file = e.target.files[0];
+  if(!file) return;
+  var reader = new FileReader();
+  reader.onload = function(){
+    try {
+      var data = JSON.parse(reader.result);
+      var merged = {};
+      for(var k in DEFAULTS){
+        merged[k] = DEFAULTS[k];
+      }
+      for(var k in data){
+        merged[k] = data[k];
+      }
+      updateUIFromSettings(merged);
+      applySettings(merged);
+      saveSettings(merged);
+      updateSnow(merged.snowCount, merged.snowSize, merged.snowSpeed, merged.snowColor);
+      alert('Imported!');
+    } catch(err){
+      alert('Failed to import');
+    }
+  };
+  reader.readAsText(file);
+  importFile.value = '';
+});
+
+var presets = {
+  Inferno: {
+    bg:'#0a0a0a', header:'#1a1a1a', text:'#ffffff', muted:'#cccccc',
+    accent:'#ff00aa', accentDark:'#ff00aa', glowColor:'#ff00ff', cardBg:'#000000',
+    cardRadius:12, glowSize:25, glowStrength:0.5, 
+    fontFamily:"'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
+    snowColor:'#ffffff', snowCount:160, snowSize:3, snowSpeed:1.3
+  },
+  kirby: { 
+    bg:'#1A1A2E', header:'#1A1A2E', text:'#FFFFFF', muted:'#F8F1F1',
+    accent:'#FF8EC6', accentDark:'#A50017', glowColor:'#FFC9D1', cardBg:'#2B2B45',
+    cardRadius:10, glowSize:25, glowStrength:0.5, 
+    fontFamily:"'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
+    snowColor:'#e660ce', snowCount:160, snowSize:3, snowSpeed:1.4
+  },
+  mathias: { 
+    bg:'#000000', header:'#000000', text:'#a3a3a3', muted:'#f8f1f1',
+    accent:'#828282', accentDark:'#3d3d3d', glowColor:'#ffffff', cardBg:'#000000',
+    cardRadius:10, glowSize:25, glowStrength:0.5, 
+    fontFamily:"'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
+    snowColor:'#ffffff', snowCount:160, snowSize:3, snowSpeed:1.4
+  },
+  Ocean: {
+    bg:'#021b2c', header:'#023047', text:'#e8f6ff', muted:'#a7d3f0',
+    accent:'#00a3ff', accentDark:'#006bb3', glowColor:'#00baff', cardBg:'#00121a',
+    cardRadius:12, glowSize:18, glowStrength:0.28, 
+    fontFamily:"'Roboto', Arial, sans-serif",
+    snowColor:'#c8f0ff', snowCount:120, snowSize:3, snowSpeed:0.9
+  },
+  Neon: {
+    bg:'#04040a', header:'#0b0b12', text:'#e7ffe7', muted:'#9ef3d1',
+    accent:'#00ffb3', accentDark:'#00d18a', glowColor:'#00ffb3', cardBg:'#05050b',
+    cardRadius:8, glowSize:30, glowStrength:0.5, 
+    fontFamily:"'VT323', monospace",
+    snowColor:'#99ffdd', snowCount:200, snowSize:2, snowSpeed:1.6
+  },
+  Retro: {
+    bg:'#0b0011', header:'#1a0337', text:'#ffe8d6', muted:'#ffd6a5',
+    accent:'#ff66c4', accentDark:'#cc3aa0', glowColor:'#ff66c4', cardBg:'#140018',
+    cardRadius:14, glowSize:12, glowStrength:0.2, 
+    fontFamily:"'Press Start 2P', cursive",
+    snowColor:'#ffd6f0', snowCount:100, snowSize:4, snowSpeed:0.7
+  },
+  Dark: DEFAULTS,
+  Light: {
+    bg:'#f4f4f6', header:'#ffffff', text:'#111111', muted:'#666666',
+    accent:'#0066ff', accentDark:'#0047b3', glowColor:'#66a3ff', cardBg:'#ffffff',
+    cardRadius:8, glowSize:10, glowStrength:0.12, 
+    fontFamily:"Arial, Helvetica, sans-serif",
+    snowColor:'#444444', snowCount:60, snowSize:2, snowSpeed:0.8
+  }
+};
+
+var presetBtns = document.querySelectorAll('[data-preset]');
+for(var i=0; i<presetBtns.length; i++){
+  presetBtns[i].addEventListener('click', function(){
+    var name = this.getAttribute('data-preset');
+    if(presets[name]){
+      var p = presets[name];
+      updateUIFromSettings(p);
+      applySettings(p);
+      saveSettings(p);
+      updateSnow(p.snowCount, p.snowSize, p.snowSpeed, p.snowColor);
+    }
+  });
+}
+
+customizeBtn.addEventListener('click', function(){
+  if(settingsPanel.style.display === 'block'){
+    settingsPanel.style.display = 'none';
+  } else {
+    settingsPanel.style.display = 'block';
+  }
+});
+
+var isDragging = false;
+var dragStartX = 0;
+var dragStartY = 0;
+var panelStartX = 0;
+var panelStartY = 0;
+
+settingsDrag.addEventListener('mousedown', function(e){
+  isDragging = true;
+  dragStartX = e.clientX;
+  dragStartY = e.clientY;
+  var rect = settingsPanel.getBoundingClientRect();
+  panelStartX = rect.left;
+  panelStartY = rect.top;
+});
+
+document.addEventListener('mousemove', function(e){
+  if(!isDragging) return;
+  var dx = e.clientX - dragStartX;
+  var dy = e.clientY - dragStartY;
+  var newX = panelStartX + dx;
+  var newY = panelStartY + dy;
+  if(newX < 8) newX = 8;
+  if(newY < 8) newY = 8;
+  if(newX + settingsPanel.offsetWidth > window.innerWidth - 8){
+    newX = window.innerWidth - settingsPanel.offsetWidth - 8;
+  }
+  if(newY + settingsPanel.offsetHeight > window.innerHeight - 8){
+    newY = window.innerHeight - settingsPanel.offsetHeight - 8;
+  }
+  settingsPanel.style.left = newX + 'px';
+  settingsPanel.style.top = newY + 'px';
+  settingsPanel.style.right = 'auto';
+});
+
+document.addEventListener('mouseup', function(){
+  isDragging = false;
+});
+
+var canvas = document.getElementById("snowCanvas");
+var ctx = canvas.getContext("2d");
+var snowflakes = [];
+var snowConfig = {
+  count: DEFAULTS.snowCount,
+  size: DEFAULTS.snowSize,
+  speed: DEFAULTS.snowSpeed,
+  color: DEFAULTS.snowColor
+};
+
+function resizeCanvas(){
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas();
+
+function createSnow(count, size){
+  snowflakes = [];
+  for(var i=0; i<count; i++){
+    snowflakes.push({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      r: Math.random() * size + 0.5,
+      d: Math.random() * 1.5 + 0.2,
+      sway: Math.random() * 2 * Math.PI,
+      swayAmp: Math.random() * 20
+    });
+  }
+}
+
+function updateSnow(count, size, speed, color){
+  snowConfig.count = count;
+  snowConfig.size = size;
+  snowConfig.speed = speed;
+  snowConfig.color = color;
+  createSnow(count, size);
+}
+
+function drawSnow(){
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.beginPath();
+  ctx.fillStyle = hexToRGBA(snowConfig.color, 0.95);
+  
+  for(var i=0; i<snowflakes.length; i++){
+    var flake = snowflakes[i];
+    ctx.moveTo(flake.x, flake.y);
+    ctx.arc(flake.x, flake.y, flake.r, 0, Math.PI*2);
+    flake.y = flake.y + (flake.d * snowConfig.speed);
+    flake.sway = flake.sway + 0.01 + (Math.random()*0.02);
+    flake.x = flake.x + (Math.sin(flake.sway) * 0.6);
+    
+    if(flake.y > canvas.height + 20){
+      flake.x = Math.random() * canvas.width;
+      flake.y = -10 - (Math.random()*40);
+    }
+    if(flake.x > canvas.width + 50){
+      flake.x = -20;
+    }
+    if(flake.x < -50){
+      flake.x = canvas.width + 20;
+    }
+  }
+  ctx.fill();
+  requestAnimationFrame(drawSnow);
+}
+
+var discordBtn = document.getElementById("discordBtn");
+discordBtn.addEventListener('click', function(){
+  window.open("https://discord.gg/FGK4VBJTyd", "_blank");
+});
+
+var gameContainer = document.getElementById("gameContainer");
+var searchInput = document.getElementById("searchInput");
+var gameInfo = document.getElementById("gameInfo").querySelector("p");
+var gameModal = document.getElementById("gameModal");
+var gameFrame = document.getElementById("gameFrame");
+var gameTitle = document.getElementById("gameTitle");
+var closeModal = document.getElementById("closeModal");
+var downloadBtn = document.getElementById("downloadBtn");
+var fullscreenBtn = document.getElementById("fullscreenBtn");
+var aboutBlankBtn = document.getElementById("aboutBlankBtn");
+var blobBtn = document.getElementById("blobBtn");
+
+closeModal.onclick = function(){
+  gameModal.style.display = "none";
+  gameFrame.src = "about:blank";
+}
+
+var latestSHA = "";
+var gamesData = [];
+
+function loadGames(){
+  fetch("https://api.github.com/repos/elite-gamez/elite-gamez.github.io/commits")
+    .then(function(r){
+      return r.json();
+    })
+    .then(function(commits){
+      var newestSHA = commits[0].sha;
+      if(newestSHA !== latestSHA){
+        latestSHA = newestSHA;
+        var url = 'https://cdn.jsdelivr.net/gh/elite-gamez/elite-gamez.github.io@'+latestSHA+'/games.json?cb='+Date.now();
+        return fetch(url);
+      }
+    })
+    .then(function(res){
+      if(res){
+        return res.json();
+      }
+    })
+    .then(function(data){
+      if(data){
+        gamesData = data;
+        renderGames();
+      }
+    })
+    .catch(function(err){
+      console.error(err);
+    });
+}
+
+function renderGames(){
+  gameContainer.innerHTML = "";
+  for(var i=0; i<gamesData.length; i++){
+    var game = gamesData[i];
+    var img = 'https://rawcdn.githack.com/elite-gamez/elite-gamez.github.io/main/'+game.image;
+    var card = document.createElement("div");
+    card.className = "game-card";
+    card.innerHTML = '<img src="'+img+'" alt="'+game.title+'"><h2>'+game.title+'</h2><p>'+game.description+'</p>';
+    card.onclick = (function(g){
+      return function(){
+        openGame(g);
+      };
+    })(game);
+    gameContainer.appendChild(card);
+  }
+  gameInfo.textContent = 'Games: ' + gamesData.length;
+}
+
+function openGame(game){
+  var url = 'https://rawcdn.githack.com/elite-gamez/elite-gamez.github.io/main/'+game.url;
+  gameFrame.src = url;
+  gameTitle.textContent = game.title;
+  gameModal.style.display = "flex";
+
+  downloadBtn.onclick = function(){
+    fetch(url)
+      .then(function(response){
+        if(!response.ok){
+          throw new Error("Failed");
+        }
+        return response.blob();
+      })
+      .then(function(blob){
+        var blobUrl = URL.createObjectURL(blob);
+        var a = document.createElement("a");
+        a.href = blobUrl;
+        a.download = game.title + ".html";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(blobUrl);
+      })
+      .catch(function(err){
+        alert("Download failed");
+      });
+  };
+
+  fullscreenBtn.onclick = function(){
+    if(gameFrame.requestFullscreen){
+      gameFrame.requestFullscreen();
+    } else {
+      alert("Fullscreen not supported");
+    }
+  };
+
+  aboutBlankBtn.onclick = function(){
+    var newWindow = window.open("about:blank", "_blank");
+    if(newWindow){
+      fetch(url)
+        .then(function(r){
+          return r.text();
+        })
+        .then(function(html){
+          newWindow.document.write('<html><head><title>'+game.title+'</title></head><body style="margin:0">'+html+'</body></html>');
+          newWindow.document.close();
+        })
+        .catch(function(err){
+          alert("Failed to open");
+        });
+    } else {
+      alert("Popup blocked!");
+    }
+  };
+
+  blobBtn.onclick = function(){
+    fetch(url)
+      .then(function(res){
+        return res.text();
+      })
+      .then(function(html){
+        var blob = new Blob([html], {type: "text/html"});
+        var blobUrl = URL.createObjectURL(blob);
+        window.open(blobUrl, "_blank");
+      })
+      .catch(function(err){
+        alert("Failed");
+      });
+  };
+}
+
+searchInput.addEventListener("input", function(){
+  var filter = searchInput.value.toLowerCase();
+  var cards = gameContainer.children;
+  for(var i=0; i<cards.length; i++){
+    var card = cards[i];
+    var title = card.querySelector("h2").textContent.toLowerCase();
+    if(title.indexOf(filter) !== -1){
+      card.style.display = "flex";
+    } else {
+      card.style.display = "none";
+    }
+  }
+});
+
+var initial = loadSettings();
+updateUIFromSettings(initial);
+applySettings(initial);
+updateSnow(initial.snowCount, initial.snowSize, initial.snowSpeed, initial.snowColor);
+createSnow(initial.snowCount, initial.snowSize);
+drawSnow();
+loadGames();
+setInterval(loadGames, 30000);
+																	</script>
+
+	</body>
+
+	</html>
+</body>
+<html>
