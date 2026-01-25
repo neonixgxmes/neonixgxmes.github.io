@@ -555,6 +555,38 @@
             margin-bottom: 40px;
         }
 
+        /* --- GAMES FULLSCREEN PHONE FRAME --- */
+        #games.page-section {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 1500;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(6px);
+        }
+        #games.page-section.active { display: flex; }
+
+        .games-overlay { width: 100%; max-width: 420px; margin: 0 auto; padding: 18px; box-sizing: border-box; }
+        .games-header { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:12px; }
+        .games-title { font-size: 18px; margin: 0; letter-spacing: 1px; }
+        .games-close { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.08); color: white; padding: 6px 10px; border-radius: 8px; cursor: pointer; }
+
+        .games-frame { width: 100%; height: calc(100vh - 120px); display:flex; align-items:center; justify-content:center; }
+        .games-frame iframe { width: 360px; height: 780px; border-radius: 28px; border: 12px solid rgba(20,20,20,0.9); box-shadow: 0 30px 80px rgba(0,0,0,0.8); overflow: hidden; }
+
+        /* Responsive: on small screens make iframe fill viewport */
+        @media (max-width: 420px) {
+            .games-overlay { padding: 10px; }
+            .games-frame { height: calc(100vh - 80px); }
+            .games-frame iframe { width: 100%; height: 100%; border-radius: 12px; border-width: 8px; }
+            .games-title { font-size: 16px; }
+        }
+
         .scan-line { position: absolute; top: 0; left: -100%; width: 50%; height: 100%; background: linear-gradient(90deg, transparent, rgba(0, 170, 255, 0.4), transparent); }
         .searching .scan-line { animation: scan 1.5s infinite linear; }
         @keyframes scan { 0% { left: -100%; } 100% { left: 200%; } }
@@ -755,7 +787,7 @@
         </div>
         
         <div class="nav-item" onclick="openGames(this)">
-            <img src="https://frogiesarcade.win/stuff/icons/calc.svg" alt="Games">
+            <img src="https://gcdnb.pbrd.co/images/64YwQJN3Mlw0.png?o=1" alt="Games">
             <div class="nav-label">Games</div>
         </div>
         
@@ -795,7 +827,7 @@
         </div>
 
         <div class="nav-item" onclick="showSection('partners', this)">
-            <img src="https://gcdnb.pbrd.co/images/RCqEtQHEYRmy.png?o=1" alt="Partners">
+            <img src="https://gcdnb.pbrd.co/images/dFyzmCOjPDNP.png?o=1" alt="Partners">
             <div class="nav-label">Partners</div>
         </div>
 
@@ -834,9 +866,14 @@
     </section>
 
     <section id="games" class="page-section">
-        <div class="main-container">
-            <h1 class="neon-title">Games</h1>
-            <iframe id="games-iframe" src="" style="width:100%; height: calc(100vh - 170px); border: none; border-radius: 12px; overflow: hidden;"></iframe>
+        <div class="games-overlay">
+            <div class="games-header">
+                <h1 class="neon-title games-title">Games</h1>
+                <button id="games-close" class="games-close" aria-label="Close Games">✕</button>
+            </div>
+            <div class="games-frame">
+                <iframe id="games-iframe" src="" frameborder="0" allowfullscreen></iframe>
+            </div>
         </div>
     </section>
 
@@ -1497,6 +1534,20 @@
                 iframe.setAttribute('src', 'Games/games.html');
             }
         }
+
+        function closeGames() {
+            // hide games and return to notes
+            showSection('notes', document.querySelector('.nav-item'));
+            // optional: don't remove iframe src so state is preserved
+            const closeBtn = document.getElementById('games-close');
+            if (closeBtn) closeBtn.blur();
+        }
+
+        // attach close handler once DOM loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            const closeBtn = document.getElementById('games-close');
+            if (closeBtn) closeBtn.addEventListener('click', closeGames);
+        });
 
         function launchBlank(url) {
             var win = window.open('about:blank');
