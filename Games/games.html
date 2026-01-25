@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script id="aclib" type="text/javascript" src="//acscdn.com/script/aclib.js"></script>
+<script type="text/javascript">
+    aclib.runAutoTag({
+        zoneId: 'enegt3nshm',
+    });
+</script>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-L292DLVR4H"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);} 
+  gtag('js', new Date());
+
+  gtag('config', 'G-L292DLVR4H');
+</script>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Neonix's Notes</title>
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+  <link rel="icon" type="image/png" sizes="180x180" href="favicon-180.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="favicon-192.png">
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+  <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+  <style>
+    #particles-js {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  z-index: -1;
+  overflow: hidden;
+}
+#particles-js::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: #000;
+  z-index: -1;
+}
+#particles-js canvas {
+  background: transparent !important;
+}
+
+
+
+  </style>
+
+  <meta name="google-adsense-account" content="ca-pub-9616672423487302">
+  
+</head>
+
+
+<body class="dark-mode">
+
+  <div id="particles-js">
+  <canvas class="particles-js-canvas-el"></canvas>
+</div>
+
+
+  <header class="site-header" id="mainHeader">
+  <div class="header-content">
+
+    <div class="logo">
+      <img src="logo.png" alt="Logo" class="logo-img" />
+    </div>
+
+    <nav class="nav-center">
+      <a href="index.html">Home</a>
+      <a href="movies.html">Movies</a>
+    </nav>
+
+  <div class="header-right">
+  <div class="search-wrapper">
+    <button class="search-btn" aria-label="Search"><i class="fa fa-search"></i></button>
+    <input type="text" id="searchBar" placeholder="Search..." />
+  </div>
+
+  <button id="settings" aria-label="Settings" title="Settings">⚙</button>
+</div>
+</div>
+
+
+</header>
+  <div id="settingsOverlay" class="settings-overlay" aria-hidden="true">
+  <div class="settings-popup">
+    <div class="settings-header">
+      <h3>Settings</h3>
+      <button id="closeSettings" aria-label="Close settings">×</button>
+    </div>
+    <div class="settings-body">
+      <button class="settings-item" id="toggle-particles">
+      <i class="fa-solid fa-toggle-on" style="color: #63E6BE;"></i> Toggle Particles</button>
+      <button class="settings-item" id="switch-background">
+      <i class="fa-solid fa-shuffle" style="color: #4FC3F7;"></i> Switch Background</button>
+      <button class="settings-item" id="tab-cloak">
+      <i class="fa-solid fa-copy"></i> Tab Cloak</button>
+      <button class="settings-item" id="change-particles-color">
+      <i class="fa-solid fa-eye-dropper" style="color: #74C0FC;"></i> Change Particle Color</button>
+      <button class="settings-item" id="toggle-theme">
+      <i class="fa-solid fa-lightbulb" style="color: #FFD43B;"></i> Toggle Color Mode</button>
+    </div>
+  </div>
+</div>
+
+
+  <ins class="adsbygoogle"
+      style="display:block; text-align:center;"
+      data-ad-client="ca-pub-5521219086088837"
+      data-ad-slot="5549138288"
+      data-ad-format="auto"
+      data-full-width-responsive="true"></ins>
+
+  <main>
+
+    <details id="featuredZonesWrapper" open>
+      <summary id="allZonesSummary" style="font-size: 1.2rem; font-weight: bold; cursor: pointer;">Featured Games</summary>
+      <div id="featuredZones" class="zone-container"></div>
+    </details>
+
+    <br><hr><br>
+
+    <details id="allZonesWrapper" open>
+      <summary id="allSummary" style="font-size: 1.2rem; font-weight: bold; cursor: pointer;">All Games</summary>
+      <div id="container">Loading...</div>
+    </details>
+  </main>
+
+  <div id="zoneViewer">
+    <div class="zone-header">
+      <div class="zone-title">
+        <h2 id="zoneName">zone</h2>
+        <span id="zoneId" style="display:none"></span>
+        <a id="zoneAuthor" href="#" target="_blank">by Author</a>
+      </div>
+      <div class="zone-controls">
+        <button onclick="fullscreenZone()">Fullscreen</button>
+        <button onclick="closeZone()">Close</button>
+      </div>
+    </div>
+    <iframe id="zoneFrame"></iframe>
+  </div>
+
+  <div id="popupOverlay">
+    <div class="popup">
+      <div class="popup-header">
+        <h3 id="popupTitle">Title</h3>
+        <button id="popupClose" onclick="closePopup()">×</button>
+      </div>
+      <div id="popupBody">Content will be here</div>
+    </div>
+  </div>
+
+  <footer>
+    <div class="footer-links">
+      <a href="#" onclick="showContact(); return false;">Contact</a>
+      <a href="#" onclick="loadPrivacy(); return false;">Privacy Policy</a>
+      <a href="javascript:saveData()">Export Data</a>
+      <a href="#" onclick="document.getElementById('importData').click(); return false;">Import Data</a>
+      <input type="file" id="importData" style="display:none;" onchange="loadData(event)">
+    </div>
+  </footer>
+
+<script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js" defer></script>
+<script src="script.js" defer></script>
+
+
+<style>
+header.site-header {
+  position: sticky;
+  top: 0;
+  width: 100%;
+  z-index: 1000;
+  background: rgba(25, 25, 25, 0.7);
+  backdrop-filter: blur(14px);
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+}
+
+.header-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0.8rem 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.logo-img {
+  height: 42px;
+  transition: transform 0.2s ease;
+}
+.logo-img:hover {
+  transform: scale(1.05);
+}
+
+.nav-center {
+  display: flex;
+  gap: 1.2rem;
+  justify-content: center;
+  flex: 1;
+}
+.nav-center a {
+  color: #fff;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.12);
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: all 0.25s ease;
+}
+.nav-center a:hover {
+  background: rgba(79,195,247,0.25);
+  border-color: #4FC3F7;
+  box-shadow: 0 0 10px rgba(79,195,247,0.4);
+  transform: translateY(-2px);
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+#settings {
+  background: linear-gradient(135deg, #4FC3F7, #2196F3);
+  border: none;
+  border-radius: 50%;
+  width: 42px;
+  height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+#settings:hover {
+  transform: rotate(25deg) scale(1.1);
+  box-shadow: 0 0 15px rgba(79,195,247,0.6);
+}
+
+.search-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.search-wrapper .search-btn {
+  background: linear-gradient(135deg, #4FC3F7, #2196F3);
+  border: none;
+  border-radius: 50%;
+  width: 42px;
+  height: 42px;
+  color: #fff;
+  font-size: 1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+.search-wrapper .search-btn:hover {
+  transform: scale(1.1);
+  box-shadow: 0 0 15px rgba(79,195,247,0.6);
+}
+
+.search-wrapper input {
+  position: absolute;
+  right: 50px;
+  width: 0;
+  opacity: 0;
+  padding: 0.5rem 1rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.08);
+  color: #fff;
+  font-size: 0.9rem;
+  outline: none;
+  transition: width 0.4s ease, opacity 0.3s ease;
+}
+
+.search-wrapper.active input {
+  width: 180px;
+  opacity: 1;
+}
+
+
+</style>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const searchWrapper = document.querySelector(".search-wrapper");
+  const searchBtn = document.querySelector(".search-btn");
+  const searchInput = searchWrapper.querySelector("input");
+
+  searchInput.disabled = true;
+
+  searchBtn.addEventListener("click", () => {
+    searchWrapper.classList.toggle("active");
+
+    if (searchWrapper.classList.contains("active")) {
+      searchInput.disabled = false;
+      searchInput.focus();
+    } else {
+      searchInput.disabled = true;
+      searchInput.value = ""; 
+    }
+  });
+
+  searchInput.addEventListener("keypress", (e) => {
+    if (e.key === "Enter") {
+      performSearch(searchInput.value);
+    }
+  });
+
+  function performSearch(query) {
+    query = query.trim().toLowerCase();
+    const allZones = document.querySelectorAll("#container .zone-item, #featuredZones .zone-item");
+
+    allZones.forEach(zone => {
+      const text = zone.textContent.toLowerCase();
+      zone.style.display = text.includes(query) ? "block" : "none";
+    });
+  }
+});
+</script>
+
+
+  
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js/vcd15cbe7772f49c399c6a5babf22c1241717689176015" integrity="sha512-ZpsOmlRQV6y907TI0dKBHq9Md29nnaEIPlkf84rnaERnq6zvWvPUqr2ft8M1aS28oN72PdrCzSjY4U6VaAw1EQ==" data-cf-beacon='{"version":"2024.11.0","token":"83e62e7443e2438e97930be8183d4100","r":1,"server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
+</body>
+</html>

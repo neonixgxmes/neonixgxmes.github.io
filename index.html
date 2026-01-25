@@ -754,6 +754,11 @@
             <div class="nav-label">Home</div>
         </div>
         
+        <a href="Games/games.html" class="nav-item" style="text-decoration:none;">
+            <img src="https://frogiesarcade.win/stuff/icons/calc.svg" alt="Games">
+            <div class="nav-label">Games</div>
+        </a>
+        
         <div class="nav-item folder-item">
             <img src="https://gcdnb.pbrd.co/images/klrIPWiuxLFX.png?o=1" class="folder-icon" alt="Folder">
             <div class="nav-label">About:Blank <span style="font-size:14px">⌵</span></div>
@@ -1233,9 +1238,15 @@
         }
 
         function resetSettings() {
-            settings = { ...defaultSettings };
+            // Reset in-memory settings to defaults, persist, apply and close panel
+            settings = JSON.parse(JSON.stringify(defaultSettings));
             localStorage.setItem('neonix-settings', JSON.stringify(settings));
+            // Update UI controls and apply the defaults
             loadSettings();
+            applyAllSettings();
+            // Close settings panel for a clear UX
+            settingsVisible = false;
+            if (settingsPanel) settingsPanel.style.display = 'none';
         }
 
         // ========================
