@@ -2168,7 +2168,8 @@
 
         // Attach UI listeners
         (function attachProfileListeners(){
-            const btn = document.getElementById('profile-button'); if (btn) btn.addEventListener('click', toggleProfilePanel);
+            const btn = document.getElementById('profile-button');
+            if (btn) btn.addEventListener('click', (e) => { e.stopPropagation(); toggleProfilePanel(); });
             const signin = document.getElementById('google-signin'); if (signin) signin.addEventListener('click', signInWithGoogle);
             const signout = document.getElementById('signout-btn'); if (signout) signout.addEventListener('click', signOut);
             const closeBtn = document.getElementById('close-profile'); if (closeBtn) closeBtn.addEventListener('click', toggleProfilePanel);
@@ -2260,5 +2261,17 @@
         })();
 
     </script>
+
+    <div id="holiday-bubble" role="region" aria-live="polite">
+        <span id="holiday-bubble-text"></span>
+        <button id="holiday-bubble-close" aria-label="Close announcement">✕</button>
+    </div>
+
+    <!-- Firebase (compat) and announcements -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script src="js/firebase-config.js"></script>
+    <script src="js/announcements.js"></script>
 </body>
 </html>

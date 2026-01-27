@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Admin — Announcements</title>
+    <style>
+        body { background:#071026; color:#fff; font-family:Arial,Helvetica,sans-serif; margin:0;padding:20px; }
+        .container { max-width:900px;margin:0 auto; }
+        .panel { background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.05); padding:16px;border-radius:8px }
+        input,textarea { width:100%; padding:8px; border-radius:6px; background:rgba(0,0,0,0.4); border:1px solid rgba(255,255,255,0.06); color:#fff }
+        label { display:block; margin:8px 0 4px }
+        button { background:#007bff;border:none;color:#fff;padding:8px 12px;border-radius:6px;cursor:pointer }
+        .row { display:flex; gap:12px }
+        .row > * { flex:1 }
+        .list-item { padding:10px; border-bottom:1px solid rgba(255,255,255,0.03); display:flex; justify-content:space-between; gap:10px; align-items:center }
+        .muted { color:rgba(255,255,255,0.6); font-size:13px }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Announcements Admin</h1>
+        <div id="auth-status" class="panel muted">Loading auth...</div>
+
+        <div id="admin-ui" style="display:none">
+            <div class="panel" style="margin-top:12px">
+                <h3>Create Announcement</h3>
+                <label for="ann-text">Text</label>
+                <textarea id="ann-text" rows="3"></textarea>
+                <div class="row" style="margin-top:8px">
+                    <div>
+                        <label for="ann-duration">Duration (seconds)</label>
+                        <input id="ann-duration" type="number" value="10" />
+                    </div>
+                    <div>
+                        <label for="ann-active">Active</label>
+                        <select id="ann-active"><option value="1">Yes</option><option value="0">No</option></select>
+                    </div>
+                </div>
+                <div style="margin-top:10px">
+                    <button id="create-ann">Create Announcement</button>
+                </div>
+            </div>
+
+            <div class="panel" style="margin-top:12px">
+                <h3>Existing Announcements</h3>
+                <div id="ann-list" style="margin-top:8px"></div>
+            </div>
+        </div>
+
+        <div style="margin-top:20px" class="muted">Only the ownermay manage announcements. Sign in with Google to continue.</div>
+    </div>
+
+    <!-- Firebase (compat) and admin behavior -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script src="js/firebase-config.js"></script>
+    <script src="js/announcements.js"></script>
+    <script>
+        // Initialize admin UI once announcements script is loaded
+        (function waitForInit(){
+            if (window.announcements && typeof window.announcements.initAdmin === 'function') {
+                window.announcements.initAdmin({
+                    allowedEmail: 'jackson.lacefield07@gmail.com',
+                    uiSelectors: {
+                        status: 'auth-status', adminUi: 'admin-ui', list: 'ann-list', createBtn: 'create-ann', text: 'ann-text', duration: 'ann-duration', active: 'ann-active'
+                    }
+                });
+                return;
+            }
+            setTimeout(waitForInit, 150);
+        })();
+    </script>
+</body>
+</html>
