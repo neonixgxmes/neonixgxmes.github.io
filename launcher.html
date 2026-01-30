@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Launcher — Neonix</title>
+  <style>
+    body{background:#000814;color:#fff;font-family:Roboto,Arial;margin:0}
+    .top{height:72px;display:flex;align-items:center;gap:12px;padding:12px 20px;background:rgba(0,0,10,0.6);}
+    .back{color:white;text-decoration:none;font-weight:700}
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:20px}
+    .card{background:rgba(0,20,50,0.4);padding:16px;border-radius:10px;display:flex;gap:12px;align-items:center;cursor:pointer}
+    .card img{width:56px;height:56px;border-radius:8px}
+    .frame{height:calc(100vh - 72px)}
+    iframe{width:100%;height:100%;border:none}
+    #settings-button{position:fixed;top:20px;right:20px}
+    #settings-panel{position:fixed;top:80px;right:20px;display:none;background:#061026;padding:12px;border-radius:8px;color:#fff}
+    .settings-button{background:#00aaff;color:#000;border:none;padding:8px;border-radius:6px}
+  </style>
+</head>
+<body>
+  <div class="top"><a class="back" href="index.html">← Home</a><h2>About:Blank Launcher</h2></div>
+  <div style="display:flex;gap:12px;height:calc(100vh - 72px)">
+    <div style="width:360px;padding:20px;overflow:auto">
+      <div class="card" data-src="https://pizzaedition.win//" onclick="openIt(this)"><img src="https://gcdnb.pbrd.co/images/LcQ01msjLL0e.png?o=1"><div><strong>Pizza Edition</strong></div></div>
+      <div class="card" data-src="https://ilovelittlekids.buzz//" onclick="openIt(this)"><img src="https://gcdnb.pbrd.co/images/Q8j4sAZ0DY7A.png?o=1"><div><strong>Velara</strong></div></div>
+      <div class="card" data-src="https://dsv.135.148.27.57.nip.io/" onclick="openIt(this)"><img src="https://dsv.135.148.27.57.nip.io/assets/img/essential/icon.ico"><div><strong>Geometry Learn V4</strong></div></div>
+      <div class="card" data-src="https://glacierarcade.win//" onclick="openIt(this)"><img src="https://gcdnb.pbrd.co/images/Z2LvYGxXn3GT.png?o=1"><div><strong>Glacier Arcade</strong></div></div>
+      <div class="card" data-src="https://hypackel.games//" onclick="openIt(this)"><img src="https://gcdnb.pbrd.co/images/93ACdqHChBVP.png?o=1"><div><strong>Hypackel Games</strong></div></div>
+      <div class="card" data-src="https://sz-games.github.io//" onclick="openIt(this)"><img src="https://raw.githubusercontent.com/sz-games/home/refs/heads/main/G.png"><div><strong>SZ Games</strong></div></div>
+      <div class="card" data-src="https://www.gn-math.dev/" onclick="openIt(this)"><img src="https://cdn.jsdelivr.net/gh/gn-math/gn-math-DONTDMCA@main/favicon.png"><div><strong>Gn-Math</strong></div></div>
+    </div>
+    <div class="frame"><iframe id="launch-frame" src="" title="Launcher view"></iframe></div>
+  </div>
+
+  <div id="settings-button">⚙️</div>
+  <div id="settings-panel">
+    <h3>Settings</h3>
+    <div><label>Theme <select id="theme-select"><option value="default">Default</option><option value="dark">Dark</option></select></label></div>
+    <div style="margin-top:8px"><button id="save-settings" class="settings-button">Save</button></div>
+  </div>
+
+  <script>
+    function openIt(el){document.getElementById('launch-frame').src=el.getAttribute('data-src')}
+    const sb=document.getElementById('settings-button'),sp=document.getElementById('settings-panel');sb.addEventListener('click',e=>{e.stopPropagation();sp.style.display=sp.style.display==='block'?'none':'block'});document.addEventListener('click',()=>sp.style.display='none');sp.addEventListener('click',e=>e.stopPropagation());
+    document.getElementById('save-settings').addEventListener('click',()=>{localStorage.setItem('neonix-settings-theme',document.getElementById('theme-select').value);});
+  </script>
+</body>
+</html>

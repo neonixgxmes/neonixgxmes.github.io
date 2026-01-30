@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Sites — Neonix</title>
+  <style>
+    :root{--neon:#00aaff;--bg:#000814;color:white}
+    body{background:var(--bg);color:var(--color,white);font-family:Roboto,Arial;margin:0;padding:0}
+    .top{height:72px;display:flex;align-items:center;gap:12px;padding:12px 20px;background:rgba(0,0,10,0.6);border-bottom:1px solid rgba(0,170,255,0.08)}
+    .back{color:white;text-decoration:none;font-weight:700}
+    .container{display:flex;height:calc(100vh - 72px)}
+    .list{width:360px;padding:20px;border-right:1px solid rgba(255,255,255,0.03);overflow:auto}
+    .list .item{padding:12px;border-radius:8px;margin-bottom:10px;background:rgba(0,20,50,0.4);cursor:pointer;display:flex;gap:12px;align-items:center}
+    .list img{width:48px;height:48px;border-radius:8px}
+    .frame{flex:1}
+    .frame iframe{width:100%;height:100%;border:none}
+    /* settings small */
+    #settings-button{position:fixed;top:20px;right:20px;width:50px;height:50px;background:rgba(0,20,50,0.6);border-radius:50%;display:flex;align-items:center;justify-content:center;z-index:200}
+    #settings-panel{position:fixed;top:80px;right:20px;width:320px;background:rgba(0,8,20,0.95);padding:16px;border-radius:10px;display:none;z-index:201;color:#fff}
+    .settings-button{background:var(--neon);color:#000;border:none;padding:8px;border-radius:6px;width:100%}
+  </style>
+</head>
+<body>
+  <div class="top"><a class="back" href="index.html">← Home</a><h2>Sites</h2></div>
+  <div id="settings-button">⚙️</div>
+  <div id="settings-panel">
+    <h3>Settings</h3>
+    <label>Theme
+      <select id="theme-select">
+        <option value="default">Default</option>
+        <option value="dark">Dark</option>
+        <option value="light">Light</option>
+      </select>
+    </label>
+    <div style="margin-top:8px"><button id="save-settings" class="settings-button">Save</button></div>
+  </div>
+  <div class="container">
+    <div class="list">
+      <div class="item" data-src="Sites/twistedstudios.html" onclick="openSrc(this)">
+        <img src="https://cdn.discordapp.com/icons/1286848564554633226/a_103e87bafaff0a0cae96e716beb6c9de.webp?size=80&quality=lossless" alt="Twisted">
+        <div><strong>Twisted Education</strong><div class="muted">Sites/twistedstudios.html</div></div>
+      </div>
+      <div class="item" data-src="Sites/elitesgames.html" onclick="openSrc(this)">
+        <img src="https://gcdnb.pbrd.co/images/lekkbJRsjl1p.png?o=1" alt="Elites">
+        <div><strong>Elites Games</strong><div class="muted">Sites/elitesgames.html</div></div>
+      </div>
+      <div class="item" data-src="Sites/gnmath.html" onclick="openSrc(this)">
+        <img src="https://cdn.jsdelivr.net/gh/gn-math/gn-math-DONTDMCA@main/favicon.png" alt="Gn-Math">
+        <div><strong>Gn-Math</strong><div class="muted">Sites/gnmath.html</div></div>
+      </div>
+    </div>
+    <div class="frame"><iframe id="site-frame" src="" title="Site viewer"></iframe></div>
+  </div>
+
+  <script>
+    function openSrc(el){
+      const src = el.getAttribute('data-src');
+      document.getElementById('site-frame').src = src;
+    }
+    // settings toggle
+    const sb = document.getElementById('settings-button');
+    const sp = document.getElementById('settings-panel');
+    sb.addEventListener('click', e=>{e.stopPropagation();sp.style.display = sp.style.display==='block'?'none':'block'});
+    document.addEventListener('click', ()=>{sp.style.display='none'});
+    sp.addEventListener('click', e=>e.stopPropagation());
+    // minimal theme
+    const themeSelect = document.getElementById('theme-select');
+    document.getElementById('save-settings').addEventListener('click', ()=>{
+      const theme = themeSelect.value; localStorage.setItem('neonix-settings-theme', theme); applyTheme(theme);
+    });
+    function applyTheme(t){ if(t==='light'){document.documentElement.style.setProperty('--bg','#f5f5f5');document.body.style.color='#000'}else{document.documentElement.style.setProperty('--bg','#000814');document.body.style.color='#fff'}}
+    // apply saved
+    applyTheme(localStorage.getItem('neonix-settings-theme')||'default');
+  </script>
+</body>
+</html>
