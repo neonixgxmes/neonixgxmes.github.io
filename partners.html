@@ -13,4 +13,27 @@
     </div>
   </div>
   <script>const sb=document.getElementById('settings-button'),sp=document.getElementById('settings-panel');sb.addEventListener('click',e=>{e.stopPropagation();sp.style.display=sp.style.display==='block'?'none':'block'});document.addEventListener('click',()=>sp.style.display='none');sp.addEventListener('click',e=>e.stopPropagation());document.getElementById('save-settings').addEventListener('click',()=>{localStorage.setItem('neonix-settings-theme',document.getElementById('theme-select').value)});</script>
+
+<!-- Inject homepage UI (styles, nav, settings) -->
+<script>
+(function(){
+  if(window.__home_ui_injected) return; window.__home_ui_injected=true;
+  fetch('/index.html').then(r=>r.text()).then(html=>{
+    const parser=new DOMParser(); const doc=parser.parseFromString(html,'text/html');
+    Array.from(doc.head.children).forEach(el=>{
+      if(el.tagName==='STYLE' || (el.tagName==='LINK' && el.rel==='stylesheet') || (el.tagName==='SCRIPT' && el.src)){
+        if(el.tagName==='SCRIPT' && el.src){ if(!Array.from(document.scripts).some(s=>s.src===el.src)){ document.head.appendChild(el.cloneNode(true)); } }
+        else document.head.appendChild(el.cloneNode(true));
+      }
+    });
+    const nav=doc.querySelector('nav.top-nav');
+    if(nav){ const existing=document.querySelector('.topbar')||document.querySelector('nav.top-nav'); if(existing) existing.replaceWith(nav.cloneNode(true)); else document.body.insertBefore(nav.cloneNode(true), document.body.firstChild); }
+    ['settings-button','settings-panel','cloak-preview','profile-button','profile-panel','announcement','holiday-bubble','loading-screen'].forEach(id=>{ const el=doc.getElementById(id); if(el && !document.getElementById(id)) document.body.appendChild(el.cloneNode(true)); });
+    Array.from(doc.scripts).forEach(s=>{
+      if(!s.src && /applyTheme|saveSettings|applyTabCloak|initWeather/.test(s.textContent||'')){ const ns=document.createElement('script'); ns.textContent=s.textContent; document.body.appendChild(ns); }
+      else if(s.src){ if(!Array.from(document.scripts).some(x=>x.src===s.src)){ const ns=document.createElement('script'); ns.src=s.src; document.body.appendChild(ns); } }
+    });
+  }).catch(()=>{});
+})();
+</script>
 </body></html>
