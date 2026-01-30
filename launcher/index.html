@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>About:Blank Launcher — Neonix</title>
+  <style>
+    :root{--bg:#000814;color:white}
+    body{background:var(--bg);color:white;margin:0;font-family:Roboto,Arial}
+    .topbar{height:85px;display:flex;align-items:center;gap:20px;padding:0 24px;background:rgba(0,0,10,0.6);border-bottom:2px solid rgba(0,170,255,0.08)}
+    .wrap{height:calc(100vh - 85px);display:flex;align-items:center;justify-content:center;padding:20px}
+    .panel{width:980px;max-width:calc(100% - 40px);display:flex;gap:12px;background:rgba(0,20,50,0.4);padding:16px;border-radius:12px}
+    .list{width:360px;overflow:auto}
+    .card{background:rgba(0,0,0,0.2);padding:12px;border-radius:8px;margin-bottom:10px;display:flex;gap:12px;align-items:center;cursor:pointer}
+    .card img{width:56px;height:56px;border-radius:8px}
+    .frame{flex:1;background:#000;border-radius:8px;overflow:hidden}
+    .frame iframe{width:100%;height:560px;border:none}
+    #settings-button{position:fixed;top:20px;right:20px;width:50px;height:50px;background:rgba(0,20,50,0.6);border-radius:50%;display:flex;align-items:center;justify-content:center;z-index:200}
+    #settings-panel{position:fixed;top:80px;right:20px;width:320px;background:rgba(0,8,20,0.95);padding:16px;border-radius:10px;display:none;z-index:201;color:#fff}
+    .settings-button{background:#00aaff;color:#000;border:none;padding:8px;border-radius:6px;width:100%}
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <a href="/">Home</a>
+    <a href="/games">Games</a>
+    <a href="/launcher">About:Blank</a>
+    <a href="/sites">Sites</a>
+    <a href="/partners">Partners</a>
+    <a href="/extra">Extra</a>
+  </div>
+
+  <div id="settings-button">⚙️</div>
+  <div id="settings-panel">
+    <h3>Settings</h3>
+    <label>Theme
+      <select id="theme-select">
+        <option value="default">Default</option>
+        <option value="dark">Dark</option>
+        <option value="light">Light</option>
+      </select>
+    </label>
+    <div style="margin-top:8px"><button id="save-settings" class="settings-button">Save</button></div>
+  </div>
+
+  <div class="wrap">
+    <div class="panel">
+      <div class="list">
+        <div class="card" data-src="https://pizzaedition.win//" onclick="openNew(this)"><img src="https://gcdnb.pbrd.co/images/LcQ01msjLL0e.png?o=1"><div><strong>Pizza Edition</strong></div></div>
+        <div class="card" data-src="https://ilovelittlekids.buzz//" onclick="openNew(this)"><img src="https://gcdnb.pbrd.co/images/Q8j4sAZ0DY7A.png?o=1"><div><strong>Velara</strong></div></div>
+        <div class="card" data-src="https://dsv.135.148.27.57.nip.io/" onclick="openNew(this)"><img src="https://dsv.135.148.27.57.nip.io/assets/img/essential/icon.ico"><div><strong>Geometry Learn V4</strong></div></div>
+        <div class="card" data-src="https://glacierarcade.win//" onclick="openNew(this)"><img src="https://gcdnb.pbrd.co/images/Z2LvYGxXn3GT.png?o=1"><div><strong>Glacier Arcade</strong></div></div>
+        <div class="card" data-src="https://hypackel.games//" onclick="openNew(this)"><img src="https://gcdnb.pbrd.co/images/93ACdqHChBVP.png?o=1"><div><strong>Hypackel Games</strong></div></div>
+        <div class="card" data-src="https://sz-games.github.io//" onclick="openNew(this)"><img src="https://raw.githubusercontent.com/sz-games/home/refs/heads/main/G.png"><div><strong>SZ Games</strong></div></div>
+        <div class="card" data-src="https://www.gn-math.dev/" onclick="openNew(this)"><img src="https://cdn.jsdelivr.net/gh/gn-math/gn-math-DONTDMCA@main/favicon.png"><div><strong>Gn-Math</strong></div></div>
+      </div>
+      <div class="frame"><!-- preview area if needed -->
+        <iframe id="preview" src="about:blank" title="Preview" sandbox></iframe>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function openNew(el){
+      const url = el.getAttribute('data-src');
+      try { window.open(url, '_blank', 'noopener'); } catch(e){ window.location.href = url; }
+    }
+    // settings toggle
+    const sb=document.getElementById('settings-button'),sp=document.getElementById('settings-panel');sb.addEventListener('click',e=>{e.stopPropagation();sp.style.display=sp.style.display==='block'?'none':'block'});document.addEventListener('click',()=>sp.style.display='none');sp.addEventListener('click',e=>e.stopPropagation());
+    document.getElementById('save-settings').addEventListener('click',()=>{localStorage.setItem('neonix-settings-theme',document.getElementById('theme-select').value)});
+    // apply saved theme
+    (function(){const t=localStorage.getItem('neonix-settings-theme')||'default'; if(t==='light'){document.body.style.background='#f5f5f5';document.body.style.color='#000'}})();
+  </script>
+</body>
+</html>
